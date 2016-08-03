@@ -76,14 +76,3 @@ MainWindow::~MainWindow()
 
 }
 
-void MainWindow::treeInit()
-{
-//    QStringList initAllDB;
-//    std::string res;
-//    res = getAllDatabases(initAllDB);
-//    allDB = initAllDB;
-//    for(int i=0;i<initAllDB.length();i++)
-//    {
-//        QTreeWidgetItem *temp_root = new QTreeWidgetItem(schemaTree,QStringList(allDB[i]));
-//    }
-}

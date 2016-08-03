@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include <QApplication>
-//#include "mysql.h"
 
 int main(int argc, char *argv[])
 {    

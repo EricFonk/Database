@@ -9,7 +9,7 @@
 #include "mysqlQuery.h"
 
 //#pragma comment(lib,"wsock32.lib")
-#pragma comment(lib,"libmysql.lib")//mysql源码库
+//#pragma comment(lib,"libmysql.lib")//mysql源码库
 
 MYSQL mysql;//mysql对象 用于进行mysql接口的调用
 MYSQL_FIELD *fd;//mysql返回域
