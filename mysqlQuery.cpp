@@ -7,6 +7,7 @@
 //
 
 #include "mysqlQuery.h"
+#include <string>
 
 //#pragma comment(lib,"wsock32.lib")
 //#pragma comment(lib,"libmysql.lib")//mysql源码库
@@ -34,6 +35,67 @@ bool ConnectDatabase()
         printf("success");
         return true;
     }
+}
+
+char* getOneVariable(std::string variable)
+{
+    MYSQL_ROW sql_row;
+    std::string query = "show variables like '" + variable + "'";
+    //std::string strResult;
+    
+    const char* queryNew = query.c_str();
+    int resInt = mysql_query(&mysql, queryNew);
+    res = mysql_store_result(&mysql);
+    sql_row = mysql_fetch_row(res);
+    //sql_row[0];
+    char* strResult = sql_row[1];
+    
+    mysql_free_result(res);
+    
+    return strResult;
+}
+
+QStandardItemModel* getConnections(QStandardItemModel *model)
+{
+    std::string query = "show PROCESSLIST";
+    std::string strResult;
+    
+    MYSQL_ROW sql_row;
+    MYSQL_FIELD* fld;
+    
+    const char* queryNew = query.c_str();
+    int resInt = mysql_query(&mysql, queryNew);
+    res = mysql_store_result(&mysql);
+    int rowsNum = mysql_num_rows(res);
+    int colsNum = mysql_num_fields(res);
+    model = new QStandardItemModel(rowsNum, colsNum);
+    
+    for (int i = 0; (fld = mysql_fetch_field(res)); i++)
+    {
+        model->setHeaderData(i, Qt::Horizontal, fld->name);
+    }
+    strResult += '\n';
+    sql_row = mysql_fetch_row(res);
+    for (int i = 0; i < rowsNum; i++)
+    {
+        for (int j = 0; j < colsNum; j++)
+        {
+            if(sql_row[j]!=NULL)
+            {
+                QModelIndex index = model->index(i, j, QModelIndex());
+                model->setData(index, QVariant(sql_row[j]));
+            }
+        }
+        strResult += '\n';
+        if (i != (rowsNum - 1))
+        {
+            sql_row = mysql_fetch_row(res);
+        }
+    }
+    mysql_free_result(res);
+    
+    
+    return model;
 }
 
 //根据表名搜索数据 返回行数、列数、列名、每条记录具体数值、主键名、主键位置

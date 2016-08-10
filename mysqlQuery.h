@@ -19,6 +19,10 @@
 using namespace std;
 
 bool ConnectDatabase();
+
+QStandardItemModel* getConnections(QStandardItemModel *model);
+char* getOneVariable(std::string variable);
+
 bool getMainKey(QString &mainKey,QString table_name);
 bool selectTest(QString,QStringList&,QStringList&,int&,int&,QString,int&);
 string updateTest(QString,QString,QString);
