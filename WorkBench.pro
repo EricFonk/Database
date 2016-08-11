@@ -28,7 +28,9 @@ SOURCES += main.cpp\
     schemas_test.cpp \
     table_alter.cpp \
     table_create.cpp \
-    tablewidget.cpp
+    tablewidget.cpp \
+    connectwindow.cpp \
+    createConnectWindow.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -41,4 +43,6 @@ HEADERS  += mainwindow.h \
     schemas_test.h \
     table_alter.h \
     table_create.h \
-    tablewidget.h
+    tablewidget.h \
+    connectwindow.h \
+    createConnectWindow.h
