@@ -10,7 +10,7 @@
 
 #include "createConnectWindow.h"
 
-createConnectWindow::createConnectWindow() : QDialog()
+createConnectWindow::createConnectWindow()
 {
     setupUI();
 }
@@ -23,7 +23,7 @@ createConnectWindow::~createConnectWindow()
 void createConnectWindow::setupUI()
 {
     this->resize(787, 421);
-    ConnNameLbl = new QLabel(this);
+    ConnNameLbl = new QLabel("连接名称",this);
     ConnNameLbl->setObjectName(QStringLiteral("ConnNameLbl"));
     ConnNameLbl->setGeometry(QRect(50, 80, 141, 41));
     QFont font;
@@ -38,37 +38,37 @@ void createConnectWindow::setupUI()
     QFont font1;
     font1.setPointSize(11);
     HintLbl1->setFont(font1);
-    HostNameLbl = new QLabel(this);
+    HostNameLbl = new QLabel("主机名",this);
     HostNameLbl->setObjectName(QStringLiteral("HostNameLbl"));
     HostNameLbl->setGeometry(QRect(110, 190, 81, 41));
     HostNameLbl->setFont(font);
     HostNameBox = new QLineEdit(this);
     HostNameBox->setObjectName(QStringLiteral("HostNameBox"));
     HostNameBox->setGeometry(QRect(210, 200, 131, 20));
-    PortLbl = new QLabel(this);
+    PortLbl = new QLabel("端口",this);
     PortLbl->setObjectName(QStringLiteral("PortLbl"));
     PortLbl->setGeometry(QRect(370, 190, 71, 41));
     PortLbl->setFont(font);
     PortBox = new QLineEdit(this);
     PortBox->setObjectName(QStringLiteral("PortBox"));
     PortBox->setGeometry(QRect(470, 200, 131, 20));
-    UserNameLbl = new QLabel(this);
+    UserNameLbl = new QLabel("用户名",this);
     UserNameLbl->setObjectName(QStringLiteral("UserNameLbl"));
     UserNameLbl->setGeometry(QRect(110, 250, 91, 41));
     UserNameLbl->setFont(font);
     UserNameBox = new QLineEdit(this);
     UserNameBox->setObjectName(QStringLiteral("UserNameBox"));
     UserNameBox->setGeometry(QRect(210, 260, 131, 20));
-    TestBtn = new QPushButton(this);
+    TestBtn = new QPushButton("测试连接",this);
     TestBtn->setObjectName(QStringLiteral("TestBtn"));
     TestBtn->setGeometry(QRect(480, 380, 121, 23));
-    SubmitBtn = new QPushButton(this);
+    SubmitBtn = new QPushButton("确认",this);
     SubmitBtn->setObjectName(QStringLiteral("SubmitBtn"));
     SubmitBtn->setGeometry(QRect(700, 380, 41, 23));
-    CancelBtn = new QPushButton(this);
+    CancelBtn = new QPushButton("取消",this);
     CancelBtn->setObjectName(QStringLiteral("CancelBtn"));
     CancelBtn->setGeometry(QRect(620, 380, 61, 23));
-    PswdLbl = new QLabel(this);
+    PswdLbl = new QLabel("密码",this);
     PswdLbl->setObjectName(QStringLiteral("PswdLbl"));
     PswdLbl->setGeometry(QRect(370, 250, 91, 41));
     PswdLbl->setFont(font);
@@ -119,15 +119,16 @@ void createConnectWindow::TestConnection()
     std::string nowUserName = userName.toStdString();
     std::string nowPswd = pswd.toStdString();
     
-//    MysqlObj* mysqlObj = new MysqlObj(nowHost.c_str(), nowUserName.c_str(), nowPswd.c_str(), nowPort);
-//    if (mysql_init(&mysqlObj->mysql) != NULL)
-//    {
-//        if (mysql_real_connect(&mysqlObj->mysql, mysqlObj->host, mysqlObj->user, mysqlObj->passwd, mysqlObj->database, 0, NULL, 0) != NULL)
-//        {
-//            QMessageBox::information(NULL, "Connect Test", "Connect Success");
-//            return;
-//        }
-//    }
+    MYSQL mysql;
+    
+    if (mysql_init(&mysql) != NULL)
+    {
+        if (mysql_real_connect(&mysql, nowHost.c_str(), nowUserName.c_str(), nowPswd.c_str(), "workbenchdb", 0, NULL, 0) != NULL)
+        {
+            QMessageBox::information(NULL, "Connect Test", "Connect Success");
+            return;
+        }
+    }
     QMessageBox::information(NULL, "Connect Test", "Connect Failed");
 }
 void createConnectWindow::saveOptions()
@@ -149,8 +150,9 @@ void createConnectWindow::saveOptions()
         }
     }
     
+    //!!!!!!!
     FILE*fp = NULL;
-    fp = fopen("Connections.ini", "a");
+    fp = fopen("/Users/vaaaas/Documents/Program/QT/Workbench/Connections", "a");
     fputs(nowConnName.c_str(), fp);
     fputs("|", fp);
     fputs(nowHost.c_str(), fp);
@@ -162,6 +164,9 @@ void createConnectWindow::saveOptions()
     fputs(nowPswd.c_str(), fp);
     fputs("\n",fp);
     fclose(fp);
+    
+    ofstream saveFile;
+    saveFile.open("/Users/vaaaas/Documents/Program/QT/Workbench/Connections",ios::out);
     
     this->hide();
 }

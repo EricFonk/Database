@@ -89,7 +89,8 @@ void connectwindow::Login()
 
 void connectwindow::openNewConn()
 {
-    //createConD.show();
+    createConnectWindow* createConD=new createConnectWindow();
+    createConD->show();
 }
 
 void connectwindow::Refresh(QModelIndex index)
@@ -111,17 +112,18 @@ void connectwindow::Refresh(QModelIndex index)
     std::string nowUserName = finalResult[3].toStdString();
     std::string nowPswd = finalResult[4].toStdString();
     
-//    MysqlObj* mysqlObj = new MysqlObj(nowHost.c_str(), nowUserName.c_str(), nowPswd.c_str(), nowPort);
-//    if (mysql_init(&mysqlObj->mysql) != NULL)
-//    {
-//        if (mysql_real_connect(&mysqlObj->mysql, mysqlObj->host, mysqlObj->user, mysqlObj->passwd, mysqlObj->database, 0, NULL, 0) != NULL)
-//        {
-//            //QMessageBox::information(NULL, "Connect Test", "Connect Success");
-//            //MainWindow mw;
-//            //mw.show();
-//            return;
-//        }
-//    }
+    MYSQL mysql;
+    
+    if (mysql_init(&mysql) != NULL)
+    {
+        if (mysql_real_connect(&mysql, nowHost.c_str(), nowUserName.c_str(), nowPswd.c_str(), "workbenchdb", 0, NULL, 0) != NULL)
+        {
+            QMessageBox::information(NULL, "Connect Test", "Connect Success");
+            MainWindow mw;
+            mw.show();
+            return;
+        }
+    }
     //QMessageBox::information(NULL, "Connect Test", "Connect Failed");
     //MainWindow mw;
     //mw.show();
@@ -132,11 +134,14 @@ void connectwindow::RemoveOneConn()
     int a = dataView->currentIndex().row();
     char buffer[256];
     QStringList messageList;
+    
+    
+    //!!!!!!!!
     FILE*fp = NULL;//需要注意
-    fp = fopen("/Users/vaaaas/Documents/Program/QT/Workbench_01/Connections.ini", "r");
+    fp = fopen("/Users/vaaaas/Documents/Program/QT/Workbench/Connections", "r");
     
     FILE*fpTemp = NULL;
-    fpTemp = fopen("/Users/vaaaas/Documents/Program/QT/Workbench_01/temp.ini", "w");
+    fpTemp = fopen("/Users/vaaaas/Documents/Program/QT/Workbench/temp", "w");
     int i = 0;
     while (fgets(buffer, 256, fp))
     {
@@ -148,6 +153,6 @@ void connectwindow::RemoveOneConn()
     }
     fclose(fp);
     fclose(fpTemp);
-    remove("/Users/vaaaas/Documents/Program/QT/Workbench_01/Connections.ini");
-    rename("/Users/vaaaas/Documents/Program/QT/Workbench_01/temp.ini", "/Users/vaaaas/Documents/Program/QT/Workbench_01/Connections.ini");
+    remove("/Users/vaaaas/Documents/Program/QT/Workbench/Connections");
+    rename("/Users/vaaaas/Documents/Program/QT/Workbench/temp", "/Users/vaaaas/Documents/Program/QT/Workbench/Connections");
 }

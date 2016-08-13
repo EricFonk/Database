@@ -13,7 +13,12 @@
 #include <QGridLayout>
 #include <QTableView>
 #include <QPushButton>
+#include <QMessageBox>
+#include <iostream>
+#include <fstream>
 
+#include "mysql.h"
+#include "mainwindow.h"
 #include "createConnectWindow.h"
 
 class connectwindow : public QWidget

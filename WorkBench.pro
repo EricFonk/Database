@@ -18,7 +18,7 @@ LIBS +=     . \
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp\
+    mainwindow.cpp\
     insertTable.cpp \
     mylistview.cpp \
     mysqlQuery.cpp \

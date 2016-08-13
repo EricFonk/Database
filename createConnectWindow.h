@@ -13,10 +13,14 @@
 #include <QDialog>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMessageBox>
+#include <iostream>
+#include <fstream>
 
+#include "mysql.h"
 #include "connectwindow.h"
 
-class createConnectWindow : public QDialog
+class createConnectWindow : public QWidget
 {
     Q_OBJECT
     
