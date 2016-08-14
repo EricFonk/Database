@@ -13,6 +13,7 @@
 #include "table_create.h"
 #include "table_alter.h"
 #include "schemas_test.h"
+#include "panel_userprivileges.h"
 #include "qFunctionTest.h"
 #include "qProcedureTest.h"
 #include "qViewTest.h"
@@ -28,8 +29,13 @@ public:
     void manageTreeInit();
     
 private:
+    QMenuBar *menuBar;
+    
     QWidget *centralwidget;
     QGridLayout *gridLayout;
+    
+    QTabWidget *mainTabWidg;
+    QGridLayout *tabGridLayout;
     
     QTabWidget *leftTabWidg;
     QWidget *manageTab;
@@ -40,9 +46,11 @@ private:
     QTreeWidget *schemaTree;
     
     QWidget *rightWidget;
+    QTabWidget *rightTabWidg;
     QVBoxLayout *rightLayout;
     
     QMenu *mainMenu;
+    Panel_UserPrivileges *UserPanel;
     
     //void initConnection();
     
@@ -60,6 +68,7 @@ private:
     QStringList allDB;
     bool hasCrtTable;
     private slots:
+	void addTableToTree(QString newTableName);
     void createSchema();
     void showMenu(const QPoint&);
     void deleteOneSchema();

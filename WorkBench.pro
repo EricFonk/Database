@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     table_create.cpp \
     tablewidget.cpp \
     connectwindow.cpp \
-    createConnectWindow.cpp
+    createConnectWindow.cpp \
+    panel_userprivileges.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -45,4 +46,5 @@ HEADERS  += mainwindow.h \
     table_create.h \
     tablewidget.h \
     connectwindow.h \
-    createConnectWindow.h
+    createConnectWindow.h \
+    panel_userprivileges.h

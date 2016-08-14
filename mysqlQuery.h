@@ -6,10 +6,10 @@
 //
 //
 
-#ifndef mysqlQuery_hpp
-#define mysqlQuery_hpp
+#ifndef mysqlQuery_h
+#define mysqlQuery_h
 
-#include "mysqlQuery.h"
+//#include "mysqlQuery.h"
 //#include <WinSock.h>
 #include <QString>
 #include "mysql.h"
@@ -33,8 +33,7 @@ string dropDBTest(QString);
 string getAllTables(QStringList&,QString);
 string createNewTable(QString,QString,QStringList,QString,QStringList);
 string dropTableWithQuery(QString query);
-void getTableAllCols(QString tableName,QStringList &col_name,QStringList &col_default,QStringList &col_isNull,
-                     QStringList &col_type,QStringList &col_key,QStringList &col_extra);
+void getTableAllCols(QString tableName,QStringList &col_name,QStringList &col_default,QStringList &col_isNull,QStringList &col_type,QStringList &col_key,QStringList &col_extra,QStringList &col_uni);
 string create_function(QString dbName,QString func_info);
 string drop_function(QString dbName,QString func_name);
 QString get_function(QString dbName,QString func_name);
@@ -50,6 +49,23 @@ string find_funcs(QString dbName,QStringList &func_list);
 string test(QString);
 QString AlterTable_RenameTable(QString tName,QString newTName);
 QString AlterTable_AddColumns(QString dbName,QString tName,QStringList allColNames,QStringList allColTypes,QStringList allColOpts,QStringList allPkOpts,QStringList allIndexOpts);
-QString AlterTable_DropColumn(QString tName,QString drop_colName);
+QString AlterTable_DropColumn(QString dbName,QString tName,QString drop_colName);
 
-#endif /* mysqlQuery_hpp */
+//这是新增函数声明
+QString Query_User_Host(QStringList &pIOUserHost, int *pIONumberOfColumns, int *pIONumberOfRows);
+QString Query_Authentication(QStringList &pIOPassword, QString pIUserName);
+QString Create_User(QString pIUserName, QString pIHost, QString pIPassword);
+QString Delete_User(QString pIUserName);
+QString Query_Privileges_Variables(QString pIUserName, QString pIHost);
+QString Query_Variables(QStringList &pIOUserPriv);
+QString Revoke_Privileges(QString pIUserName, QString pIHost);
+QString Authority_Management(int pIJudgement, QString pIUserName, QString pIHost);
+QString Query_UserResource(QStringList &pIOUserResource, QString pIUserName, QString pIHost);
+QString Set_UserResource(QString pIUserName, QString pIHost, QString pIQuestions, QString pIUpdates, QString pIConnections, QString pIUserConnections);
+QString Query_Schema(QStringList &pIOSchema, QString pIUserName, QString pIHost, int *pIONumberOfRows);
+QString Set_Schema_Privileges(int pIJudgement, QString pISchema, QString pIUserName, QString pIHost);
+QString Query_Shema_Variables(QString pIUserName, QString pIHost, QString pISchema);
+QString Show_Schema_Privileges(QStringList &pIOSchemaPriv);
+QString Revoke_Schema_Privileges(QString pIUserName, QString pIHost);
+QString Delete_Entry(QString pIUserName, QString pIHost, QString pISchema);
+#endif /* mysqlQuery_h */

@@ -12,46 +12,88 @@ MainWindow::MainWindow(QWidget *parent)
     mainMenu = new QMenu(this);
     QPushButton *createDB = new QPushButton("create database");
     
+    menuBar=new QMenuBar(0);
+    
+    QAction *actionSsss = new QAction("Action01",menuBar);
+    actionSsss->setObjectName(QStringLiteral("actionSsss"));
+    QAction *actionSsss_2 = new QAction("Action02",menuBar);
+    actionSsss_2->setObjectName(QStringLiteral("actionSsss_2"));
+    
+    menuBar->setObjectName(QStringLiteral("menuBar"));
+    //menuBar->setGeometry(QRect(0, 0, 400, 22));
+    QMenu *menuHhh = new QMenu("菜单项01");
+    menuHhh->setObjectName(QStringLiteral("menuHhh"));
+    menuBar->addAction(menuHhh->menuAction());
+    menuHhh->addAction(actionSsss);
+    menuHhh->addSeparator();
+    menuHhh->addAction(actionSsss_2);
+    this->setMenuBar(menuBar);
+    
     centralwidget = new QWidget(this);
     centralwidget->setObjectName(QStringLiteral("centralwidget"));
     gridLayout = new QGridLayout(centralwidget);
     gridLayout->setObjectName(QStringLiteral("gridLayout"));
     
-    leftTabWidg=new QTabWidget(centralwidget);
-    leftTabWidg->setObjectName(QStringLiteral("leftTabWidg"));
-    leftTabWidg->setMinimumSize(400, 450);
-    leftTabWidg->setTabEnabled(0, true);
-    leftTabWidg->setTabEnabled(1, true);
-    leftTabWidg->setTabBarAutoHide(false);
+    mainTabWidg=new QTabWidget(centralwidget);
+    mainTabWidg->setObjectName("mainTabWidg");
+    QSizePolicy mainTabPolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    mainTabPolicy.setHorizontalStretch(0);
+    mainTabPolicy.setVerticalStretch(0);
+    mainTabPolicy.setHeightForWidth(mainTabWidg->sizePolicy().hasHeightForWidth());
+    mainTabWidg->setSizePolicy(mainTabPolicy);
     
-    QSizePolicy sizePolicy1(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    sizePolicy1.setHorizontalStretch(0);
-    sizePolicy1.setVerticalStretch(0);
-    sizePolicy1.setHeightForWidth(leftTabWidg->sizePolicy().hasHeightForWidth());
-    leftTabWidg->setSizePolicy(sizePolicy1);
+    leftTabWidg=new QTabWidget(mainTabWidg);
+    leftTabWidg->setObjectName(QStringLiteral("leftTabWidg"));
+    leftTabWidg->setMaximumWidth(250);
+    
+    QWidget *mainTab=new QWidget();
+    mainTab->setObjectName("mainTab");
+    mainTabWidg->addTab(mainTab,QString("Main Tab"));
+    QWidget *mainBlankTab=new QWidget();
+    mainBlankTab->setObjectName("mainBlankTab");
+    mainTabWidg->addTab(mainBlankTab, "Main Blank Tab");
+    
+    tabGridLayout=new QGridLayout(mainTab);
+    tabGridLayout->setObjectName("tabGridLayout");
+    
+    QSizePolicy leftTabPolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    leftTabPolicy.setHorizontalStretch(0);
+    leftTabPolicy.setVerticalStretch(0);
+    leftTabPolicy.setHeightForWidth(leftTabWidg->sizePolicy().hasHeightForWidth());
+    leftTabWidg->setSizePolicy(leftTabPolicy);
     
     manageTab = new QWidget();
     manageTab->setObjectName(QStringLiteral("ManageTab"));
     QVBoxLayout *manageLayout=new QVBoxLayout(manageTab);
     manageTree=new QTreeWidget();
     manageTree->setObjectName(QStringLiteral("leftTreeWidg"));
-    manageTree->setMinimumSize(300, 400);
+    manageTree->setMaximumWidth(210);
     manageLayout->addWidget(manageTree);
     manageTab->setLayout(manageLayout);
     
-    schemaTab = new QWidget(centralwidget);
+    schemaTab = new QWidget();
     schemaTab->setObjectName(QStringLiteral("schemaTab"));
     QVBoxLayout *schemaLayout=new QVBoxLayout(schemaTab);
     schemaTree=new QTreeWidget();
     schemaTree->setObjectName(QStringLiteral("schemaTree"));
-    schemaTree->setMinimumSize(300, 400);
+    schemaTree->setMaximumWidth(210);
+    //设置菜单种类
+    schemaTree->setContextMenuPolicy(Qt::CustomContextMenu);
     schemaLayout->addWidget(schemaTree);
     schemaTab->setLayout(schemaLayout);
 
     leftTabWidg->addTab(manageTab, QString("Manage"));
     leftTabWidg->addTab(schemaTab, QString("Schema"));
     
-    gridLayout->addWidget(leftTabWidg, 0, 0, 1, 1);
+    rightTabWidg=new QTabWidget(mainTabWidg);
+    rightTabWidg->setObjectName(QStringLiteral("rightTabWidg"));
+    rightTabWidg->setMinimumSize(400, 450);
+    
+    QSizePolicy rightTabPolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    rightTabPolicy.setHorizontalStretch(0);
+    rightTabPolicy.setVerticalStretch(0);
+    rightTabPolicy.setHeightForWidth(rightTabWidg->sizePolicy().hasHeightForWidth());
+    rightTabWidg->setSizePolicy(rightTabPolicy);
     
     rightWidget=new QWidget();
     QSizePolicy sizePolicy2(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -61,7 +103,7 @@ MainWindow::MainWindow(QWidget *parent)
     rightWidget->setSizePolicy(sizePolicy2);
     
     QTableView *dataView;
-    dataView=new QTableView(centralwidget);
+    dataView=new QTableView(mainTabWidg);
     dataView->setObjectName(QStringLiteral("dataView"));
     dataView->setMinimumHeight(300);
     
@@ -70,20 +112,32 @@ MainWindow::MainWindow(QWidget *parent)
     //rightLayout->addWidget(createDB);
     rightWidget->setLayout(rightLayout);
     
-    gridLayout->addWidget(rightWidget, 0, 1, 1, 1);
+    QWidget *rightBlankTab=new QWidget();
+    rightBlankTab->setObjectName("rightBlankTab");
+    
+    rightTabWidg->addTab(rightWidget, "Right Tab");
+    rightTabWidg->addTab(rightBlankTab, "Right Blank Tab");
+    
+    tabGridLayout->addWidget(leftTabWidg, 0, 0, 1, 1);
+    tabGridLayout->addWidget(rightTabWidg, 0, 1, 1, 1);
+    
+    //gridLayout->addWidget(menuBar);
+    gridLayout->addWidget(mainTabWidg);
     
     this->setCentralWidget(centralwidget);
-    resize(850, 450);
+    
+    //menuBar->setGeometry(0,0,this->width(),30);
+    resize(950, 650);
     
     manageTreeInit();
     schemaTreeInit();
-    //设置菜单种类
-    //manageTree->setContextMenuPolicy(Qt::CustomContextMenu);
-    schemaTree->setContextMenuPolicy(Qt::CustomContextMenu);
+
     connect(manageTree,SIGNAL(itemClicked(QTreeWidgetItem*,int)),this,SLOT(initManageInfo(QTreeWidgetItem*,int)));
     connect(schemaTree,SIGNAL(itemClicked(QTreeWidgetItem*,int)),this,SLOT(initOneDBInfo(QTreeWidgetItem*,int)));
     connect(schemaTree,SIGNAL(customContextMenuRequested(const QPoint&)),this,SLOT(showMenu(const QPoint&)));
     //connect(createDB,SIGNAL(clicked()),this,SLOT(createSchema()));
+    
+    QMetaObject::connectSlotsByName(this);
 }
 
 MainWindow::~MainWindow()
@@ -242,6 +296,13 @@ void MainWindow::createOneTable()
     hasCrtTable = true;
     tableCreate->setDBName(schemaTree->currentItem()->parent()->text(0));
     
+	connect(tableCreate,SIGNAL(createTableSuccess(QString)),this,SLOT(addTableToTree(QString)));
+}
+
+void MainWindow::addTableToTree(QString newTableName)
+{
+	QTreeWidgetItem *table_leaf = new QTreeWidgetItem(schemaTree->currentItem(),QStringList(newTableName));
+	schemaTree->currentItem()->addChild(table_leaf);
 }
 
 void MainWindow::alterOneTable()
@@ -366,12 +427,13 @@ void MainWindow::manageTreeInit()
 {
     QTreeWidgetItem *temp_root = new QTreeWidgetItem(manageTree,QStringList("Variables"));
     QTreeWidgetItem *temp_root2 = new QTreeWidgetItem(manageTree,QStringList("Connections"));
+    QTreeWidgetItem *temp_root3 = new QTreeWidgetItem(manageTree,QStringList("Users and Privileges"));
 }
 
 void MainWindow::initManageInfo(QTreeWidgetItem *temp_root, int temp)
 {
     QTableView *dataView;
-    dataView=new QTableView(centralwidget);
+    dataView=new QTableView(mainTabWidg);
     dataView->setObjectName(QStringLiteral("dataView"));
     dataView->setMinimumHeight(300);
     //QMessageBox::information(this, "ERROR!", QString(item->text(0)));
@@ -407,6 +469,14 @@ void MainWindow::initManageInfo(QTreeWidgetItem *temp_root, int temp)
         rightLayout->addWidget(dataView);
         dataView->setModel(model);
         dataView->update();
+    }else if(manageTree->currentItem()->text(0).compare("Users and Privileges")==0){
+        QWidget *temp = rightLayout->itemAt(0)->widget();
+        rightLayout->removeWidget(temp);
+        delete(temp);
+        
+        UserPanel=new Panel_UserPrivileges();
+        rightLayout->addWidget(UserPanel);
+        
     }
     //QMessageBox::information(this, "ERROR!", mysql_error(&mysqlObj.mysql));
 }
@@ -433,8 +503,11 @@ void MainWindow::initTables()
     res = getAllTables(table_list,dbName);
     if(res.compare("success")==0&&table_list.length()!=0)
     {
-        QTreeWidgetItem *table_leaf = new QTreeWidgetItem(root,table_list);
-        schemaTree->currentItem()->addChild(table_leaf);
+		for(int t=0;t<table_list.length();t++)
+		{
+	        QTreeWidgetItem *table_leaf = new QTreeWidgetItem(root,QStringList(table_list[t]));
+	        schemaTree->currentItem()->addChild(table_leaf);
+		}
     }
 }
 

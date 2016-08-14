@@ -101,72 +101,72 @@ QStandardItemModel* getConnections(QStandardItemModel *model)
 //根据表名搜索数据 返回行数、列数、列名、每条记录具体数值、主键名、主键位置
 bool selectTest(QString table_name,QStringList &head,QStringList &data,int &row,int &col,QString mainKey,int &mainPos)
 {
-    QString myquery="select * from "+table_name+";";
-    char *mytemp;
-    int sumRow=0;
-    int sumCol=0;
-    MYSQL_RES *res;
-    MYSQL_ROW column;
-    
-    mysql_query(&mysql,myquery.toStdString().c_str());
-    res=mysql_store_result(&mysql);
-    sumRow = mysql_affected_rows(&mysql);
-    row = sumRow;
-    sumCol = mysql_field_count(&mysql);
-    col = sumCol;
-    if(res->row_count!=0)
-    {
-        for(int i=0;i<sumCol;i++)
-        {
-            mytemp = mysql_fetch_field(res)->name;
-            if(mainKey.toStdString().compare(mytemp)==0)
-            {
-                mainPos=i;
-            }
-            head<<mytemp;
-        }
-        qDebug("in %d",mainPos);
-        while((column=mysql_fetch_row(res)))
-        {
-            string temp;
-            qDebug("%d %d",sumRow,sumCol);
-            for(int j=0;j<col;j++)
-            {
-                if(column[j])
-                {
-                    temp += column[j];
-                }
-                if(j!=(col-1))
-                {
-                    temp += "//";
-                }
-            }
-            
-            data<<temp.c_str();
-        }
-        
-        //qDebug("main %s %d",mainKey.toStdString(),mainPos);
-    }
-    
-    
-    return true;
+	QString myquery="select * from "+table_name+";";
+	char *mytemp;
+	int sumRow=0;
+	int sumCol=0;
+	MYSQL_RES *res;
+	MYSQL_ROW column;
+
+	mysql_query(&mysql,myquery.toStdString().c_str());
+	res=mysql_store_result(&mysql);
+	sumRow = mysql_affected_rows(&mysql);
+	row = sumRow;
+	sumCol = mysql_field_count(&mysql);
+	col = sumCol;
+	if(res->row_count!=0)
+	{
+		for(int i=0;i<sumCol;i++)
+	{
+		mytemp = mysql_fetch_field(res)->name;
+		if(mainKey.toStdString().compare(mytemp)==0)
+		{
+			mainPos=i;			
+		}
+		head<<mytemp;
+	}	
+	qDebug("in %d",mainPos);
+	while(column=mysql_fetch_row(res))
+	{
+		string temp;
+		qDebug("%d %d",sumRow,sumCol);
+		for(int j=0;j<col;j++)
+		{
+			if(column[j])
+			{
+				temp += column[j];
+			}			
+			if(j!=(col-1))
+			{
+				temp += "//";
+			}			
+		}
+		
+		data<<temp.c_str();
+	}
+
+	//qDebug("main %s %d",mainKey.toStdString().c_str(),mainPos);
+	}
+	
+	
+	return true;
 }
 
 //根据表名、数据、约束条件进行数据更新
 string updateTest(QString table_name,QString data,QString con)
 {
-    QString myquery="update "+table_name+" set ";
-    myquery = myquery + data + " where " + con + ";";
-    //qDebug("%s",myquery);
-    if(mysql_query(&mysql,myquery.toStdString().c_str()))
-    {
-        qDebug("error %s",mysql_error(&mysql));
-        return mysql_error(&mysql);
-    }
-    else
-    {
-        return "success";
-    }
+	QString myquery="update "+table_name+" set ";
+	myquery = myquery + data + " where " + con + ";";
+	//qDebug("%s",myquery);
+	if(mysql_query(&mysql,myquery.toStdString().c_str()))
+	{
+		qDebug("error %s",mysql_error(&mysql));
+		return mysql_error(&mysql);
+	}
+	else
+	{
+		return "success";
+	}
 }
 
 //根据表名获取主键的名称
@@ -634,7 +634,7 @@ string dropTableWithQuery(QString query)
 
 //根据表名获取其所有列信息
 void getTableAllCols(QString tableName,QStringList &col_name,QStringList &col_default,QStringList &col_isNull,
-                     QStringList &col_type,QStringList &col_key,QStringList &col_extra)
+					QStringList &col_type,QStringList &col_key,QStringList &col_extra,QStringList &col_uni)
 {
     QString myquery;
     myquery = "SELECT * FROM information_schema.COLUMNS where table_name='"+tableName+"';";
@@ -657,6 +657,12 @@ void getTableAllCols(QString tableName,QStringList &col_name,QStringList &col_de
             col_extra<<column[16];
         }
     }
+}
+
+void getOneTableUniqueChecks(QString dbName, QString tName,QStringList &unique)
+{
+	QString myquery;
+	myquery = "SELECT ";
 }
 
 QString AlterTable_AddColumns(QString dbName,QString tName,QStringList allColNames,QStringList allColTypes,QStringList allColOpts,QStringList allPkOpts,QStringList allIndexOpts)
@@ -709,21 +715,21 @@ QString AlterTable_AddColumns(QString dbName,QString tName,QStringList allColNam
     return flag;
 }
 
-QString AlterTable_DropColumn(QString tName,QString drop_colName)
+QString AlterTable_DropColumn(QString dbName, QString tName,QString drop_colName)
 {
-    QString myquery;
-    QString flag;
-    myquery = "ALTER TABLE "+tName+" DROP "+drop_colName+";";
-    if(mysql_query(&mysql,myquery.toStdString().c_str()))
-    {
-        qDebug("error %s",mysql_error(&mysql));
-        flag = mysql_error(&mysql);
-    }
-    else
-    {
-        flag = "OK";
-    }
-    return flag;
+	QString myquery;
+	QString flag;
+	myquery = "ALTER TABLE "+dbName+"."+tName+" DROP "+drop_colName+";";
+	if(mysql_query(&mysql,myquery.toStdString().c_str()))
+	{
+		qDebug("error %s",mysql_error(&mysql));
+		flag = mysql_error(&mysql);
+	}
+	else
+	{
+		flag = "OK";
+	}
+	return flag;
 }
 
 //更改表名 检查sql语法是否正确
@@ -742,4 +748,461 @@ QString AlterTable_RenameTable(QString tName,QString newTName)
         flag = "OK";
     }
     return flag;
+}
+
+//这是我写的
+//首先是连接数据库，已经写了
+
+
+//查询用户表中的user和host,返回结果集
+QString Query_User_Host(QStringList &pIOUserHost, int *pIONumberOfColumns, int *pIONumberOfRows)
+{
+	QString querySql;
+	QString queryStatus;
+	MYSQL_RES *queryResult;
+	MYSQL_ROW fetchRow;
+	querySql = "select user,host from mysql.user";
+	if (mysql_query(&mysql, querySql.toStdString().c_str()))
+	{
+		qDebug("error %s", mysql_error(&mysql));
+		queryStatus = mysql_error(&mysql);
+	}
+	else
+	{
+		queryResult = mysql_store_result(&mysql);
+		if (queryResult)
+		{
+			*pIONumberOfColumns = mysql_num_fields(queryResult); //获取列的数目
+			*pIONumberOfRows = mysql_affected_rows(&mysql); //获取行的数目
+
+			for (int m = 0; m < *pIONumberOfRows; m++) //几行几列,
+			{
+				fetchRow = mysql_fetch_row(queryResult);
+				if (fetchRow != NULL)
+				{
+					for (int n = 0; n < *pIONumberOfColumns; n++)
+					{
+						pIOUserHost<<fetchRow[n];
+					}
+				}
+			}
+			queryStatus = "OK";
+		}
+	}
+	return queryStatus;
+}
+//查询当前用户的密码
+QString Query_Authentication(QStringList &pIOPassword,QString pIUserName)
+{
+	QString querySql;
+	QString queryStatus;
+	MYSQL_RES *queryResult;
+	MYSQL_ROW fetchRow;
+
+	querySql = "select authentication_string from mysql.user where user='" + pIUserName + "';";
+	if (mysql_query(&mysql, querySql.toStdString().c_str()))
+	{
+		qDebug("error %s", mysql_error(&mysql));
+		queryStatus = mysql_error(&mysql);
+	}
+	else
+	{
+		queryResult = mysql_store_result(&mysql);
+		fetchRow = mysql_fetch_row(queryResult);
+		pIOPassword << fetchRow[0];
+		queryStatus = "OK";
+	}
+	return queryStatus;
+}
+//创建新用户
+QString Create_User(QString pIUserName, QString pIHost, QString pIPassword)
+{
+	QString createSql;
+	QString createStatus;
+	createSql = "create user' " + pIUserName + " '@'" + pIHost + "'identified by '" + pIPassword + "';";
+	if (mysql_query(&mysql, createSql.toStdString().c_str()))
+	{
+		qDebug("error %s", mysql_error(&mysql));
+		createStatus = mysql_error(&mysql);
+	}
+	else
+	{
+		createStatus = "OK";
+	}
+	return createStatus;
+}
+
+//删除用户
+QString Delete_User(QString pIUserName)
+{
+	QString deleteSql;
+	QString deleteStatus;
+	deleteSql = "delete from mysql.user where user='" + pIUserName + "';";
+	if (mysql_query(&mysql, deleteSql.toStdString().c_str()))
+	{
+		qDebug("error %s", mysql_error(&mysql));
+		deleteStatus = mysql_error(&mysql);
+	}
+	else
+	{
+		deleteStatus = "OK";
+	}
+	return deleteStatus;
+}
+
+//查询权限，将权限值赋给对应的变量
+QString Query_Privileges_Variables(QString pIUserName, QString pIHost)
+{
+	QString querySql;
+	QString queryStatus;
+	querySql = "select Select_priv,Insert_priv,Update_priv,Delete_priv,Create_priv,Drop_priv,Reload_priv,Shutdown_priv,Process_priv,File_priv,Grant_priv,References_priv,Index_priv,Alter_priv,Show_db_priv,Super_priv,Create_tmp_table_priv,Lock_tables_priv,Execute_priv,Repl_slave_priv,Repl_client_priv,Create_view_priv,Show_view_priv,Create_routine_priv,Alter_routine_priv,Create_user_priv,Event_priv,Trigger_priv,Create_tablespace_priv into @select_priv,@insert_priv,@update_priv,@delete_priv,@create_priv,@drop_priv,@reload_priv,@shutdown_priv,@process_priv,@file_priv,@grant_priv,@references_priv,@index_priv,@alter_priv,@show_db_priv,@super_priv,@create_tmp_table_priv,@lock_tables_priv,@execute_priv,@repl_slave_priv,@repl_client_priv,@create_view_priv,@show_view_priv,@create_routine_priv,@alter_routine_priv,@create_user_priv,@event_priv,@trigger_priv,@create_tablespace_priv from mysql.user where user='" + pIUserName + "' and host='" + pIHost + "'";
+	if (mysql_query(&mysql, querySql.toStdString().c_str()))
+	{
+		qDebug("error %s", mysql_error(&mysql));
+		queryStatus = mysql_error(&mysql);
+	}
+	else
+	{
+		queryStatus = "OK";
+	}
+	return queryStatus;
+}
+//查询权限变量
+QString Query_Variables(QStringList &pIOUserPriv)
+{
+	QString querySql;
+	QString queryStatus;
+	MYSQL_RES *queryResult;
+	MYSQL_ROW fetchRow;
+	querySql = "select @select_priv,@insert_priv,@update_priv,@delete_priv,@create_priv,@drop_priv,@reload_priv,@shutdown_priv,@process_priv,@file_priv,@grant_priv,@references_priv,@index_priv,@alter_priv,@show_db_priv,@super_priv,@create_tmp_table_priv,@lock_tables_priv,@execute_priv,@repl_slave_priv,@repl_client_priv,@create_view_priv,@show_view_priv,@create_routine_priv,@alter_routine_priv,@create_user_priv,@event_priv,@trigger_priv,@create_tablespace_priv;";
+	if (mysql_query(&mysql, querySql.toStdString().c_str()))
+	{
+		qDebug("error %s", mysql_error(&mysql));
+		queryStatus = mysql_error(&mysql);
+	}
+	else
+	{
+		queryResult = mysql_store_result(&mysql);
+		if (queryResult)
+		{
+			fetchRow = mysql_fetch_row(queryResult);
+			for (int i = 0; i < 29; i++)
+			{
+				pIOUserPriv << fetchRow[i];
+			}
+			queryStatus = "OK";
+		}
+	}
+	return queryStatus;
+}
+//撤销用户权限
+QString Revoke_Privileges(QString pIUserName, QString pIHost)
+{
+	QString revokeSql;
+	QString revokeStatus;
+	revokeSql = "revoke alter,alter routine,create,create routine,create tablespace,create temporary tables,create user,create view,delete,drop,event,execute,file,grant option,index,insert,lock tables,process, references,reload,replication client,replication slave,select,show databases,show view,shutdown,super,trigger,update on *.* from '" + pIUserName + "'@'" + pIHost + "';";
+	if (mysql_query(&mysql, revokeSql.toStdString().c_str()))
+	{
+		qDebug("error %s", mysql_error(&mysql));
+		revokeStatus = mysql_error(&mysql);
+	}
+	else
+	{
+		revokeStatus = "OK";
+	}
+	return revokeStatus;
+}
+//用户授权
+//二十九个权限授权，过于复杂，并且代码重复过多
+QString Authority_Management(int pIJudgement,QString pIUserName,QString pIHost)
+{
+	int res;
+	QString grantSql;
+	QString grantStatus;
+	enum PrivEnum
+	{
+		Select = 0,
+		Insert,
+		Update,
+		Delete,
+		Create,
+		Drop,
+		Reload,
+		ShutDown,
+		Process,
+		File,
+		Option,
+		References,
+		Index,
+		Alter,
+		ShowDatabases,
+		Super,
+		TemporarTables,
+		LockTables,
+		Execute,
+		Slave,
+		Client,
+		CreateView,
+		ShowView,
+		CreateRoutine,
+		AlterRoutine,
+		CreateUser,
+		Event,
+		Trigger,
+		CreateTableSpace
+	};
+	switch (pIJudgement)
+	{
+	case Select:grantSql = "grant select on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case Insert:grantSql = "grant insert on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case Update:grantSql = "grant update on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case Delete:grantSql = "grant delete on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case Create:grantSql = "grant create on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case Drop:grantSql = "grant drop on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case Reload:grantSql = "grant reload on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case ShutDown:grantSql = "grant shutdown on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case Process:grantSql = "grant process on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case File:grantSql = "grant file on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case Option:grantSql = "grant grant option on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case References:grantSql = "grant references on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case Index:grantSql = "grant index on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case Alter:grantSql = "grant alter on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case ShowDatabases:grantSql = "grant show databases on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case Super:grantSql = "grant super on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case TemporarTables:grantSql = "grant create temporary tables on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case LockTables:grantSql = "grant lock tables on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case Execute:grantSql = "grant execute on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case Slave:grantSql = "grant replication slave on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case Client:grantSql = "grant replication client on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case CreateView:grantSql = "grant create view on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case ShowView:grantSql = "grant show view on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case CreateRoutine:grantSql = "grant create routine on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case AlterRoutine:grantSql = "grant alter routine on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case CreateUser:grantSql = "grant create user on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case Event:grantSql = "grant event on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case Trigger:grantSql = "grant trigger on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	case CreateTableSpace:grantSql = "grant create tablespace on *.* to '" + pIUserName + "'@'" + pIHost + "';"; break;
+	default:
+		break;
+	}
+	res = mysql_query(&mysql, grantSql.toStdString().c_str());
+	if (!res)
+	{
+		grantStatus = "OK";
+	}
+	return grantStatus;
+
+}
+
+//查询当前用户资源
+QString Query_UserResource(QStringList &pIOUserResource,QString pIUserName, QString pIHost)
+{
+	MYSQL_RES *queryResult;
+	QString querySql;
+	QString queryStatus;
+	MYSQL_ROW fetchRow;
+	querySql = "select max_questions,max_updates,max_connections,max_user_connections from mysql.user where user='" + pIUserName + "' and host='" + pIHost + "';";
+	if (mysql_query(&mysql, querySql.toStdString().c_str()))
+	{
+		qDebug("error %s", mysql_error(&mysql));
+		queryStatus = mysql_error(&mysql);
+	}
+	else
+	{
+		queryResult = mysql_store_result(&mysql);
+		fetchRow = mysql_fetch_row(queryResult);
+		for (int i = 0; i < 4; i++)
+		{
+			pIOUserResource << fetchRow[i];
+		}
+		queryStatus = "OK";
+	}
+	return queryStatus;
+}
+
+//设置用户资源
+QString Set_UserResource(QString pIUserName, QString pIHost, QString pIQuestions, QString pIUpdates, QString pIConnections, QString pIUserConnections)
+{
+	QString setSql;
+	QString setStatus;
+	setSql = "GRANT USAGE ON *.* TO '" + pIUserName + "'@'" + pIHost + "' WITH MAX_QUERIES_PER_HOUR " + pIQuestions + " MAX_UPDATES_PER_HOUR " + pIUpdates + " MAX_CONNECTIONS_PER_HOUR " + pIConnections + " MAX_USER_CONNECTIONS " + pIUserConnections + ";";
+	if (mysql_query(&mysql, setSql.toStdString().c_str()))
+	{
+		qDebug("error %s", mysql_error(&mysql));
+		setStatus = mysql_error(&mysql);
+	}
+	else
+	{
+		setStatus = "OK";
+	}
+	return setStatus;
+}
+
+//查询当前用户赋予了权限的pISchema
+QString Query_Schema(QStringList &pIOSchema, QString pIUserName, QString pIHost,int *pIONumberOfRows)
+{
+	QString querySql;
+	QString queryStatus;
+	MYSQL_RES *queryResult;
+	MYSQL_ROW fetchRow;
+	querySql = "select db from mysql.db where user='" + pIUserName + "' and host='" + pIHost + "';";
+	if (mysql_query(&mysql, querySql.toStdString().c_str()))
+	{
+		qDebug("error %s", mysql_error(&mysql));
+		queryStatus = mysql_error(&mysql);
+	}
+	else
+	{
+		queryResult = mysql_store_result(&mysql);
+		if (queryResult)
+		{
+			*pIONumberOfRows = mysql_affected_rows(&mysql); //获取行的数目
+
+			for (int j = 0; j < *pIONumberOfRows; j++) //行循环
+			{
+				fetchRow = mysql_fetch_row(queryResult);
+				if (fetchRow != NULL)
+				{
+					pIOSchema << fetchRow[0];
+				}
+			}
+			queryStatus = "OK";
+		}
+	}
+	return queryStatus;
+}
+
+//设置当前用户数据库Schema权限
+QString Set_Schema_Privileges(int pIJudgement, QString pISchema, QString pIUserName, QString pIHost)
+{
+	int res;
+	QString grantSql;
+	QString grantStatus;
+	enum PrivEnum
+	{
+		Select = 0,
+		Insert,
+		Update,
+		Delete,
+		Execute,
+		ShowView,
+		Create,
+		Alter,
+		References,
+		Index,
+		CreateView,
+		CreateRoutine,
+		AlterRoutine,
+		Event,
+		Drop,
+		Trigger,
+		GrantOption,
+		CreateTempTables,
+		LockTables
+	};
+	switch (pIJudgement)
+	{
+	case Select:grantSql = "GRANT SELECT ON " + pISchema + ".* TO " + pIUserName + "@" + pIHost + ";"; break;
+	case Insert:grantSql = "GRANT INSERT ON " + pISchema + ".* TO " + pIUserName + "@" + pIHost + ";"; break;
+	case Update:grantSql = "GRANT UPDATE ON " + pISchema + ".* TO " + pIUserName + "@" + pIHost + ";"; break;
+	case Delete:grantSql = "GRANT DELETE ON " + pISchema + ".* TO " + pIUserName + "@" + pIHost + ";"; break;
+	case Execute:grantSql = "GRANT EXECUTE ON " + pISchema + ".* TO " + pIUserName + "@" + pIHost + ";"; break;
+	case ShowView:grantSql = "GRANT SHOW VIEW ON " + pISchema + ".* TO " + pIUserName + "@" + pIHost + ";"; break;
+	case Create:grantSql = "GRANT CREATE ON " + pISchema + ".* TO " + pIUserName + "@" + pIHost + ";"; break;
+	case Alter:grantSql = "GRANT ALTER ON " + pISchema + ".* TO " + pIUserName + "@" + pIHost + ";"; break;
+	case References:grantSql = "GRANT REFERENCES ON " + pISchema + ".* TO " + pIUserName + "@" + pIHost + ";"; break;
+	case Index:grantSql = "GRANT INDEX ON " + pISchema + ".* TO " + pIUserName + "@" + pIHost + ";"; break;
+	case CreateView:grantSql = "GRANT CREATE VIEW ON " + pISchema + ".* TO " + pIUserName + "@" + pIHost + ";"; break;
+	case CreateRoutine:grantSql = "GRANT CREATE ROUTINE ON " + pISchema + ".* TO " + pIUserName + "@" + pIHost + ";"; break;
+	case AlterRoutine:grantSql = "GRANT ALTER ROUTINE ON " + pISchema + ".* TO " + pIUserName + "@" + pIHost + ";"; break;
+	case Event:grantSql = "GRANT EVENT ON " + pISchema + ".* TO " + pIUserName + "@" + pIHost + ";"; break;
+	case Drop:grantSql = "GRANT DROP ON " + pISchema + ".* TO " + pIUserName + "@" + pIHost + ";"; break;
+	case Trigger:grantSql = "GRANT TRIGGER ON " + pISchema + ".* TO " + pIUserName + "@" + pIHost + ";"; break;
+	case GrantOption:grantSql = "GRANT GRANT OPTION ON " + pISchema + ".* TO " + pIUserName + "@" + pIHost + ";"; break;
+	case CreateTempTables:grantSql = "GRANT CREATE TEMPORARY TABLES ON " + pISchema + ".* TO " + pIUserName + "@" + pIHost + ";"; break;
+	case LockTables:grantSql = "GRANT LOCK TABLES ON " + pISchema + ".* TO " + pIUserName + "@" + pIHost + ";"; break;
+	default:
+		break;
+	}
+	res = mysql_query(&mysql, grantSql.toStdString().c_str());
+	if (!res)
+	{
+		grantStatus = "OK";
+	}
+	return grantStatus;
+}
+QString Query_Shema_Variables(QString pIUserName, QString pIHost, QString pISchema)
+{
+	QString querySql;
+	QString queryStatus;
+	querySql = "select Select_priv,Insert_priv,Update_priv,Delete_priv,Create_priv,Drop_priv,Grant_priv,References_priv,Index_priv,Alter_priv,Create_tmp_table_priv,Lock_tables_priv,Create_view_priv,Show_view_priv,Create_routine_priv,Alter_routine_priv,Execute_priv,Event_priv,Trigger_priv into @select_priv,@insert_priv,@update_priv,@delete_priv,@create_priv,@drop_priv,@grant_priv,@references_priv,@index_priv,@alter_priv,@create_tmp_table_priv,@lock_tables_priv,@create_view_priv,@show_view_priv,@create_routine_priv,@alter_routine_priv,@execute_priv,@event_priv,@trigger_priv from mysql.db where user='" + pIUserName + "' and host='" + pIHost + "'and db='" + pISchema + "';";
+	if (mysql_query(&mysql, querySql.toStdString().c_str()))
+	{
+		qDebug("error %s", mysql_error(&mysql));
+		queryStatus = mysql_error(&mysql);
+	}
+	else
+	{
+		queryStatus = "OK";
+	}
+	return queryStatus;
+}
+QString Show_Schema_Privileges(QStringList &pIOSchemaPriv)
+{
+	QString querySql;
+	QString queryStatus;
+	MYSQL_RES *queryResult;
+	MYSQL_ROW fetchRow;
+	querySql = "select @select_priv,@insert_priv,@update_priv,@delete_priv,@create_priv,@drop_priv,@grant_priv,@references_priv,@index_priv,@alter_priv,@create_tmp_table_priv,@lock_tables_priv,@create_view_priv,@show_view_priv,@create_routine_priv,@alter_routine_priv,@execute_priv,@event_priv,@trigger_priv;";
+	if (mysql_query(&mysql, querySql.toStdString().c_str()))
+	{
+		qDebug("error %s", mysql_error(&mysql));
+		queryStatus = mysql_error(&mysql);
+	}
+	else
+	{
+		queryResult = mysql_store_result(&mysql);
+		if (queryResult)
+		{
+			fetchRow = mysql_fetch_row(queryResult);
+			for (int i = 0; i < 19; i++)
+			{
+				pIOSchemaPriv << fetchRow[i];
+			}
+			queryStatus = "OK";
+		}
+	}
+	return queryStatus;
+}
+QString Revoke_Schema_Privileges(QString pIUserName, QString pIHost)
+{
+	QString revokeStatus;
+	QString revokeSql;
+	revokeSql = "delete from mysql.db where user='" + pIUserName + "' and host='" + pIHost + "';";
+	if (mysql_query(&mysql, revokeSql.toStdString().c_str()))
+	{
+		qDebug("error %s", mysql_error(&mysql));
+		revokeStatus = mysql_error(&mysql);
+	}
+	else
+	{
+		revokeStatus = "OK";
+	}
+	return revokeStatus;
+}
+QString Delete_Entry(QString pIUserName, QString pIHost, QString pISchema)
+{
+	QString deleteStatus;
+	QString deleteSql;
+	deleteSql = "delete from mysql.db where user='" + pIUserName + "' and host='" + pIHost + "' and db='" + pISchema + "';";
+	if (mysql_query(&mysql, deleteSql.toStdString().c_str()))
+	{
+		qDebug("error %s", mysql_error(&mysql));
+		deleteStatus = mysql_error(&mysql);
+	}
+	else
+	{
+		deleteStatus = "OK";
+	}
+	return deleteStatus;
 }

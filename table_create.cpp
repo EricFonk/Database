@@ -63,36 +63,36 @@ void TableCrt::setDBName(QString dbname)
 }
 void TableCrt::loadTableInfo(QString tname)
 {
-    newTableName->setText(tname);
-    QStringList col_name,col_default,col_isNull,col_type,col_key,col_extra;
-    getTableAllCols(tname,col_name,col_default,col_isNull,col_type,col_key,col_extra);
-    int row = col_name.length();
-    tableOpt->setRowCount(row);
-    for(int i=0;i<row;i++)
-    {
-        tableOpt->setItem(i,0,new QTableWidgetItem(col_name[i]));
-        tableOpt->setItem(i,8,new QTableWidgetItem(col_default[i]));
-        if(col_isNull[i].compare("NO")==0)
-        {
-            QTableWidgetItem *check = new QTableWidgetItem();
-            check->setCheckState(Qt::Checked);
-            tableOpt->setItem(i,3,check);
-        }
-        tableOpt->setItem(i,1,new QTableWidgetItem(col_type[i]));
-        if(col_key[i].compare("PRI")==0)
-        {
-            QTableWidgetItem *check = new QTableWidgetItem();
-            check->setCheckState(Qt::Checked);
-            tableOpt->setItem(i,2,check);
-        }
-        if(col_extra[i].compare("auto_increment")==0)
-        {
-            QTableWidgetItem *check = new QTableWidgetItem();
-            check->setCheckState(Qt::Checked);
-            tableOpt->setItem(i,7,check);
-        }
-    }
-    
+	newTableName->setText(tname);
+	QStringList col_name,col_default,col_isNull,col_type,col_key,col_extra,col_uni;
+	getTableAllCols(tname,col_name,col_default,col_isNull,col_type,col_key,col_extra,col_uni);
+	int row = col_name.length();
+	tableOpt->setRowCount(row);
+	for(int i=0;i<row;i++)
+	{
+		tableOpt->setItem(i,0,new QTableWidgetItem(col_name[i]));
+		tableOpt->setItem(i,8,new QTableWidgetItem(col_default[i]));
+		if(col_isNull[i].compare("NO")==0)
+		{
+			QTableWidgetItem *check = new QTableWidgetItem();
+			check->setCheckState(Qt::Checked);	
+			tableOpt->setItem(i,3,check);
+		}
+		tableOpt->setItem(i,1,new QTableWidgetItem(col_type[i]));
+		if(col_key[i].compare("PRI")==0)
+		{
+			QTableWidgetItem *check = new QTableWidgetItem();
+			check->setCheckState(Qt::Checked);	
+			tableOpt->setItem(i,2,check);
+		}
+		if(col_extra[i].compare("auto_increment")==0)
+		{
+			QTableWidgetItem *check = new QTableWidgetItem();
+			check->setCheckState(Qt::Checked);	
+			tableOpt->setItem(i,7,check);
+		}	
+	}
+	
 }
 //新增一列
 /*
@@ -126,93 +126,93 @@ void TableCrt::insertCol()
  */
 void TableCrt::applyCreate(bool)
 {
-    int colnum=0;
-    QStringList createOpt,pkOpts,uniqOpts;
-    QString pkOption="",tableName="";
-    colnum = tableOpt->rowCount();//获取用户新建列数
-    
-    for(int i=0;i<colnum;i++)
-    {
-        QString oneOpt="";
-        QWidget *temp = tableOpt->cellWidget(i,1);
-        QComboBox *tempCB = (QComboBox *)temp;
-        
-        QStringList checkOpts;
-        QString pkOpt="",uniqOpt="";
-        checkOpts<<tempCB->currentText();
-        for(int j=2;j<8;j++)
-        {
-            if(tableOpt->item(i,j)->checkState()==Qt::Checked)
-            {
-                if(j==2)
-                {
-                    pkOpt="`"+tableOpt->item(i,0)->text()+"`";
-                    pkOpts<<pkOpt;
-                }
-                else if(j==4)
-                {
-                    uniqOpt= "UNIQUE INDEX `"+tableOpt->item(i,0)->text()+"_UNIQUE` (`"+tableOpt->item(i,0)->text()+"` ASC)";
-                    uniqOpts<<uniqOpt;
-                }
-                else
-                {
-                    QString keyword="";
-                    switch(j)
-                    {
-                        case 3:keyword="NOT NULL";
-                            break;
-                        case 5:keyword="";
-                            break;
-                        case 6:keyword="UNSIGNED";
-                            break;
-                        case 7:keyword="ZEROFILL";
-                            break;
-                        case 8:keyword="AUTO_INCREMENT";
-                            break;
-                    }
-                    checkOpts<<keyword;
-                }
-            }
-        }
-        if(tableOpt->item(i,9)!=NULL)
-        {
-            checkOpts<<"DEFAULT "+tableOpt->item(i,9)->text();
-        }
-        //加入列名
-        oneOpt = "`"+tableOpt->item(i,0)->text()+"`";
-        //加入约束
-        for(int i=0;i<checkOpts.length();i++)
-        {
-            oneOpt = oneOpt+" "+checkOpts[i];
-        }
-        createOpt<<oneOpt;
-        //主键约束
-        if(pkOpts[0]!=NULL){
-            pkOption="PRIMARY KEY (";
-            for(int i=0;i<pkOpts.length();i++)
-            {
-                pkOption = pkOption+pkOpts[i];
-                if(i!=(pkOpts.length()-1))
-                {
-                    pkOption=pkOption+",";
-                }
-                else
-                {
-                    pkOption=pkOption+")";
-                }
-            }
-        }		
-    }
-    tableName = newTableName->text();
-    string res = createNewTable(dbName,tableName,createOpt,pkOption,uniqOpts);
-    if(res.compare("success")==0)
-    {			
-        emit createTableSuccess(tableName);
-        //listView->edit(index); 
-    }
-    else
-    {
-        QMessageBox::information(this, "ERROR!", QString::fromStdString(res)); 
-    }
-    qDebug("test");
+	int colnum=0;
+	QStringList createOpt,pkOpts,uniqOpts;
+	QString pkOption="",tableName="";
+	colnum = tableOpt->rowCount();//获取用户新建列数
+
+	for(int i=0;i<colnum;i++)
+	{
+		QString oneOpt="";
+		QWidget *temp = tableOpt->cellWidget(i,1);
+		QComboBox *tempCB = (QComboBox *)temp;
+		
+		QStringList checkOpts;
+		QString pkOpt="",uniqOpt="";
+		checkOpts<<tempCB->currentText();
+		for(int j=2;j<8;j++)
+		{
+			if(tableOpt->item(i,j)->checkState()==Qt::Checked)
+			{
+				if(j==2)
+				{
+					pkOpt="`"+tableOpt->item(i,0)->text()+"`";	
+					pkOpts<<pkOpt;
+				}
+				else if(j==4)
+				{
+					uniqOpt= "UNIQUE INDEX `"+tableOpt->item(i,0)->text()+"_UNIQUE` (`"+tableOpt->item(i,0)->text()+"` ASC)";
+					uniqOpts<<uniqOpt;
+				}
+				else
+				{
+					QString keyword="";
+					switch(j)
+					{
+						case 3:keyword="NOT NULL";
+							break;
+						case 5:keyword="";
+							break;
+						case 6:keyword="UNSIGNED";
+							break;
+						case 7:keyword="ZEROFILL";
+							break;
+						case 8:keyword="AUTO_INCREMENT";
+							break;
+					}
+					checkOpts<<keyword;
+				}
+			}
+		}
+		if(tableOpt->item(i,9)!=NULL)
+		{
+			checkOpts<<"DEFAULT "+tableOpt->item(i,9)->text();
+		}
+		//加入列名
+		oneOpt = "`"+tableOpt->item(i,0)->text()+"`";
+		//加入约束
+		for(int i=0;i<checkOpts.length();i++)
+		{
+			oneOpt = oneOpt+" "+checkOpts[i];
+		}
+		createOpt<<oneOpt;
+		//主键约束
+		if(pkOpts.length()!=0){
+			pkOption="PRIMARY KEY (";
+			for(int i=0;i<pkOpts.length();i++)
+			{
+				pkOption = pkOption+pkOpts[i];
+				if(i!=(pkOpts.length()-1))
+				{
+					pkOption=pkOption+",";
+				}
+				else
+				{
+					pkOption=pkOption+")";
+				}
+			}
+		}		
+	}
+	tableName = newTableName->text();
+	string res = createNewTable(dbName,tableName,createOpt,pkOption,uniqOpts);
+	if(res.compare("success")==0)
+	{			
+		emit createTableSuccess(tableName);
+            //listView->edit(index); 
+	}
+	else
+	{
+		QMessageBox::information(this, "ERROR!", QString::fromStdString(res)); 
+	}
+	qDebug("test");
 }
