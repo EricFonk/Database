@@ -77,6 +77,16 @@ void createConnectWindow::setupUI()
     PswdBox->setGeometry(QRect(470, 260, 131, 20));
     PswdBox->setEchoMode(QLineEdit::Password);
     
+    HostNameBox->setText("localhost");
+    PortBox->setText("3306");
+    UserNameBox->setText("root");
+    PswdBox->setText("19960612");
+    ConnName = ConnNameBox->text();
+    host = HostNameBox->text();
+    port = PortBox->text();
+    userName = UserNameBox->text();
+    pswd = PswdBox->text();
+    
     QObject::connect(CancelBtn, SIGNAL(clicked()), this, SLOT(close()));
     QObject::connect(TestBtn, SIGNAL(clicked()), this, SLOT(TestConnection()));
     QObject::connect(HostNameBox, SIGNAL(textChanged(QString)), this, SLOT(setHost(QString)));
@@ -114,10 +124,16 @@ void createConnectWindow::setPswd(QString pswd)
 
 void createConnectWindow::TestConnection()
 {
+    
     std::string nowHost = host.toStdString();
     unsigned int nowPort = port.toInt();
     std::string nowUserName = userName.toStdString();
     std::string nowPswd = pswd.toStdString();
+    cout<<"\n";
+    cout<<nowHost;
+    cout<<nowUserName;
+    cout<<nowPswd;
+    cout<<"workbenchdb";
     
     MYSQL mysql;
     
@@ -150,23 +166,26 @@ void createConnectWindow::saveOptions()
         }
     }
     
-    //!!!!!!!
-    FILE*fp = NULL;
-    fp = fopen("/Users/vaaaas/Documents/Program/QT/Workbench/Connections", "a");
-    fputs(nowConnName.c_str(), fp);
-    fputs("|", fp);
-    fputs(nowHost.c_str(), fp);
-    fputs("|", fp);
-    fputs(nowPort.c_str(), fp);
-    fputs("|", fp);
-    fputs(nowUserName.c_str(), fp);
-    fputs("|", fp);
-    fputs(nowPswd.c_str(), fp);
-    fputs("\n",fp);
-    fclose(fp);
-    
+    //!!!!!!!!
+    //ofstream saveFile("/Users/vaaaas/Documents/Program/QT/Workbench/Connections");
     ofstream saveFile;
-    saveFile.open("/Users/vaaaas/Documents/Program/QT/Workbench/Connections",ios::out);
+    saveFile.open("/Users/vaaaas/Documents/Program/QT/Workbench/Connections",ios::out|ios::ate|ios::app);
+    if(saveFile.is_open())
+    {
+        saveFile<<nowConnName;
+        saveFile<<"|";
+        saveFile<<nowHost;
+        saveFile<<"|";
+        saveFile<<nowPort;
+        saveFile<<"|";
+        saveFile<<nowUserName;
+        saveFile<<"|";
+        saveFile<<nowPswd;
+        saveFile<<"\n";
+        saveFile.close();
+    }else{
+        cout << "Error opening file";
+    }
     
     this->hide();
 }

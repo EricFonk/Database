@@ -11,6 +11,24 @@
 connectwindow::connectwindow()
 {
     setupUI();
+    
+    QStringList ConnectionList = getConnections();
+    QStandardItemModel* Listmodel = new QStandardItemModel(ConnectionList.length() - 1, 4);
+    Listmodel->setHeaderData(0, Qt::Horizontal, QString("Conn Name"));
+    Listmodel->setHeaderData(1, Qt::Horizontal, QString("Host"));
+    Listmodel->setHeaderData(2, Qt::Horizontal, QString("Port"));
+    Listmodel->setHeaderData(3, Qt::Horizontal, QString("User Name"));
+    for (int i = 0; i<ConnectionList.length()-1; i++)
+    {
+        QStringList oneConn = ConnectionList[i].split('|');
+        for (int j = 0; j<oneConn.length()-1; j++)
+        {
+            QModelIndex index = Listmodel->index(i, j, QModelIndex());
+            Listmodel->setData(index, QVariant(oneConn[j]));
+        }
+    }
+    dataView->setModel(Listmodel);
+    dataView->resizeColumnToContents(4);
 }
 
 connectwindow::~connectwindow()
@@ -49,9 +67,11 @@ void connectwindow::setupUI()
     bottomWidget->setSizePolicy(bottomSizePolicy);
     bottomLayout=new QHBoxLayout(bottomWidget);
     
+    connectBtn=new QPushButton("登录连接");
     newBtn=new QPushButton("新建连接");
     deleteBtn=new QPushButton("删除链接");
     
+    bottomLayout->addWidget(connectBtn);
     bottomLayout->addWidget(newBtn);
     bottomLayout->addWidget(deleteBtn);
     gridLayout->addWidget(bottomWidget);
@@ -59,6 +79,7 @@ void connectwindow::setupUI()
     resize(850, 450);
     
     QObject::connect(dataView, SIGNAL(clicked(QModelIndex)), this, SLOT(Refresh(QModelIndex)));
+    QObject::connect(connectBtn, SIGNAL(clicked()),this,SLOT(loginConnect()));
     QObject::connect(newBtn, SIGNAL(clicked()), this, SLOT(openNewConn()));
     QObject::connect(deleteBtn, SIGNAL(clicked()), this, SLOT(RemoveOneConn()));
 }
@@ -68,16 +89,19 @@ QStringList connectwindow::getConnections()
     char buffer[256];
     QStringList messageList;
     
-    FILE*fp = NULL;
-    fp = fopen("/Users/vaaaas/Documents/Program/QT/Workbench_01/Connections.ini", "r");
-    fgets(buffer, 256, fp);
-    do
-    {
-        std::string myStr = buffer;
-        QString st = QString::fromStdString(myStr);
-        messageList.append(st);
-    } while (fgets(buffer, 256, fp));
-    fclose(fp);
+    ifstream fp("/Users/vaaaas/Documents/Program/QT/Workbench/Connections");
+    if(!fp.is_open()){
+        cout<<"Error opening file Connections";
+        exit(1);
+    }else{
+        while(!fp.eof())
+        {
+            fp.getline(buffer, 100);
+            QString *st=new QString(buffer);
+            messageList.append(*st);
+        }
+        fp.close();
+    }
     
     return messageList;
 }
@@ -112,6 +136,43 @@ void connectwindow::Refresh(QModelIndex index)
     std::string nowUserName = finalResult[3].toStdString();
     std::string nowPswd = finalResult[4].toStdString();
     
+//    MYSQL mysql;
+//    
+//    if (mysql_init(&mysql) != NULL)
+//    {
+//        if (mysql_real_connect(&mysql, nowHost.c_str(), nowUserName.c_str(), nowPswd.c_str(), "workbenchdb", 0, NULL, 0) != NULL)
+//        {
+//            QMessageBox::information(NULL, "Connect Test", "Connect Success");
+//            //mw=new MainWindow();
+//            //mw->show();
+//            return;
+//        }
+//    }
+    //QMessageBox::information(NULL, "Connect Test", "Connect Failed");
+    //MainWindow mw;
+    //mw.show();
+}
+
+void connectwindow::loginConnect()
+{
+    int a = dataView->currentIndex().row();
+
+    QStringList conns = getConnections();
+    QStringList finalResult;
+    
+    for(int i=0;i<=a;i++)
+    {
+        if (i == a)
+        {
+            finalResult = conns[i].split('|');
+        }
+    }
+    
+    std::string nowHost = finalResult[1].toStdString();
+    unsigned int nowPort = finalResult[2].toInt();
+    std::string nowUserName = finalResult[3].toStdString();
+    std::string nowPswd = finalResult[4].toStdString();
+    
     MYSQL mysql;
     
     if (mysql_init(&mysql) != NULL)
@@ -119,14 +180,12 @@ void connectwindow::Refresh(QModelIndex index)
         if (mysql_real_connect(&mysql, nowHost.c_str(), nowUserName.c_str(), nowPswd.c_str(), "workbenchdb", 0, NULL, 0) != NULL)
         {
             QMessageBox::information(NULL, "Connect Test", "Connect Success");
-            MainWindow mw;
-            mw.show();
+            mw=new MainWindow();
+            mw->show();
             return;
         }
     }
-    //QMessageBox::information(NULL, "Connect Test", "Connect Failed");
-    //MainWindow mw;
-    //mw.show();
+
 }
 
 void connectwindow::RemoveOneConn()
@@ -135,24 +194,35 @@ void connectwindow::RemoveOneConn()
     char buffer[256];
     QStringList messageList;
     
-    
-    //!!!!!!!!
-    FILE*fp = NULL;//需要注意
-    fp = fopen("/Users/vaaaas/Documents/Program/QT/Workbench/Connections", "r");
-    
-    FILE*fpTemp = NULL;
-    fpTemp = fopen("/Users/vaaaas/Documents/Program/QT/Workbench/temp", "w");
-    int i = 0;
-    while (fgets(buffer, 256, fp))
+    ifstream fp("/Users/vaaaas/Documents/Program/QT/Workbench/Connections");
+    if(!fp.is_open()){
+        cout<<"Error opening file Connections";
+        exit(1);
+    }else
     {
-        if (i != a)
+        ofstream saveFile;
+        saveFile.open("/Users/vaaaas/Documents/Program/QT/Workbench/temp",ios::out|ios::trunc);
+        if(!saveFile.is_open()){
+            cout<<"Error opening file temp";
+            exit(1);
+        }else
         {
-            fwrite(buffer, sizeof(buffer), 1, fpTemp);
+            int i = 0;
+            
+            while(!fp.eof())
+            {
+                fp.getline(buffer, 256);
+                if(i!=a)
+                {
+                    saveFile<<buffer;
+                    saveFile<<"\n";
+                }
+                i++;
+            }
+            fp.close();
+            saveFile.close();
         }
-        i++;
     }
-    fclose(fp);
-    fclose(fpTemp);
     remove("/Users/vaaaas/Documents/Program/QT/Workbench/Connections");
     rename("/Users/vaaaas/Documents/Program/QT/Workbench/temp", "/Users/vaaaas/Documents/Program/QT/Workbench/Connections");
 }
