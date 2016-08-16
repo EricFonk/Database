@@ -12,23 +12,7 @@ connectwindow::connectwindow()
 {
     setupUI();
     
-    QStringList ConnectionList = getConnections();
-    QStandardItemModel* Listmodel = new QStandardItemModel(ConnectionList.length() - 1, 4);
-    Listmodel->setHeaderData(0, Qt::Horizontal, QString("Conn Name"));
-    Listmodel->setHeaderData(1, Qt::Horizontal, QString("Host"));
-    Listmodel->setHeaderData(2, Qt::Horizontal, QString("Port"));
-    Listmodel->setHeaderData(3, Qt::Horizontal, QString("User Name"));
-    for (int i = 0; i<ConnectionList.length()-1; i++)
-    {
-        QStringList oneConn = ConnectionList[i].split('|');
-        for (int j = 0; j<oneConn.length()-1; j++)
-        {
-            QModelIndex index = Listmodel->index(i, j, QModelIndex());
-            Listmodel->setData(index, QVariant(oneConn[j]));
-        }
-    }
-    dataView->setModel(Listmodel);
-    dataView->resizeColumnToContents(4);
+    Refresh();
 }
 
 connectwindow::~connectwindow()
@@ -38,6 +22,7 @@ connectwindow::~connectwindow()
 
 void connectwindow::setupUI()
 {
+    createConD=new createConnectWindow();
     //    QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     //    sizePolicy.setHorizontalStretch(0);
     //    sizePolicy.setVerticalStretch(0);
@@ -78,10 +63,11 @@ void connectwindow::setupUI()
     
     resize(850, 450);
     
-    QObject::connect(dataView, SIGNAL(clicked(QModelIndex)), this, SLOT(Refresh(QModelIndex)));
+    //QObject::connect(dataView, SIGNAL(clicked(QModelIndex)), this, SLOT(Refresh(QModelIndex)));
     QObject::connect(connectBtn, SIGNAL(clicked()),this,SLOT(loginConnect()));
     QObject::connect(newBtn, SIGNAL(clicked()), this, SLOT(openNewConn()));
     QObject::connect(deleteBtn, SIGNAL(clicked()), this, SLOT(RemoveOneConn()));
+    QObject::connect(createConD->SubmitBtn, SIGNAL(clicked()),this,SLOT(Refresh()));
 }
 
 QStringList connectwindow::getConnections()
@@ -113,79 +99,64 @@ void connectwindow::Login()
 
 void connectwindow::openNewConn()
 {
-    createConnectWindow* createConD=new createConnectWindow();
     createConD->show();
 }
 
-void connectwindow::Refresh(QModelIndex index)
+void connectwindow::Refresh()
 {
-    int a = dataView->currentIndex().row();
-    QStringList conns = getConnections();
-    QStringList finalResult;
-    
-    for(int i=0;i<=a;i++)
+    QStringList ConnectionList = getConnections();
+    QStandardItemModel* Listmodel = new QStandardItemModel(ConnectionList.length() - 1, 4);
+    Listmodel->setHeaderData(0, Qt::Horizontal, QString("Conn Name"));
+    Listmodel->setHeaderData(1, Qt::Horizontal, QString("Host"));
+    Listmodel->setHeaderData(2, Qt::Horizontal, QString("Port"));
+    Listmodel->setHeaderData(3, Qt::Horizontal, QString("User Name"));
+    for (int i = 0; i<ConnectionList.length()-1; i++)
     {
-        if (i == a)
+        QStringList oneConn = ConnectionList[i].split('|');
+        for (int j = 0; j<oneConn.length()-1; j++)
         {
-            finalResult = conns[i].split('|');
+            QModelIndex index = Listmodel->index(i, j, QModelIndex());
+            Listmodel->setData(index, QVariant(oneConn[j]));
         }
     }
-    
-    std::string nowHost = finalResult[1].toStdString();
-    unsigned int nowPort = finalResult[2].toInt();
-    std::string nowUserName = finalResult[3].toStdString();
-    std::string nowPswd = finalResult[4].toStdString();
-    
-//    MYSQL mysql;
-//    
-//    if (mysql_init(&mysql) != NULL)
-//    {
-//        if (mysql_real_connect(&mysql, nowHost.c_str(), nowUserName.c_str(), nowPswd.c_str(), "workbenchdb", 0, NULL, 0) != NULL)
-//        {
-//            QMessageBox::information(NULL, "Connect Test", "Connect Success");
-//            //mw=new MainWindow();
-//            //mw->show();
-//            return;
-//        }
-//    }
-    //QMessageBox::information(NULL, "Connect Test", "Connect Failed");
-    //MainWindow mw;
-    //mw.show();
+    dataView->setModel(Listmodel);
+    dataView->resizeColumnToContents(4);
 }
 
 void connectwindow::loginConnect()
 {
     int a = dataView->currentIndex().row();
 
-    QStringList conns = getConnections();
-    QStringList finalResult;
-    
-    for(int i=0;i<=a;i++)
-    {
-        if (i == a)
+    if(a!=-1){
+        QStringList conns = getConnections();
+        QStringList finalResult;
+        
+        for(int i=0;i<=a;i++)
         {
-            finalResult = conns[i].split('|');
+            if (i == a)
+            {
+                finalResult = conns[i].split('|');
+            }
+        }
+        
+        std::string nowHost = finalResult[1].toStdString();
+        unsigned int nowPort = finalResult[2].toInt();
+        std::string nowUserName = finalResult[3].toStdString();
+        std::string nowPswd = finalResult[4].toStdString();
+        
+        MYSQL mysql;
+        
+        if (mysql_init(&mysql) != NULL)
+        {
+            if (mysql_real_connect(&mysql, nowHost.c_str(), nowUserName.c_str(), nowPswd.c_str(), "workbenchdb", 0, NULL, 0) != NULL)
+            {
+                QMessageBox::information(NULL, "Connect Test", "Connect Success");
+                mw=new MainWindow();
+                mw->show();
+                return;
+            }
         }
     }
-    
-    std::string nowHost = finalResult[1].toStdString();
-    unsigned int nowPort = finalResult[2].toInt();
-    std::string nowUserName = finalResult[3].toStdString();
-    std::string nowPswd = finalResult[4].toStdString();
-    
-    MYSQL mysql;
-    
-    if (mysql_init(&mysql) != NULL)
-    {
-        if (mysql_real_connect(&mysql, nowHost.c_str(), nowUserName.c_str(), nowPswd.c_str(), "workbenchdb", 0, NULL, 0) != NULL)
-        {
-            QMessageBox::information(NULL, "Connect Test", "Connect Success");
-            mw=new MainWindow();
-            mw->show();
-            return;
-        }
-    }
-
 }
 
 void connectwindow::RemoveOneConn()
@@ -212,7 +183,7 @@ void connectwindow::RemoveOneConn()
             while(!fp.eof())
             {
                 fp.getline(buffer, 256);
-                if(i!=a)
+                if(i!=a&&buffer[0]!='\0')
                 {
                     saveFile<<buffer;
                     saveFile<<"\n";
@@ -225,4 +196,5 @@ void connectwindow::RemoveOneConn()
     }
     remove("/Users/vaaaas/Documents/Program/QT/Workbench/Connections");
     rename("/Users/vaaaas/Documents/Program/QT/Workbench/temp", "/Users/vaaaas/Documents/Program/QT/Workbench/Connections");
+    Refresh();
 }

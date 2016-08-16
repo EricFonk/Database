@@ -38,21 +38,20 @@ public:
     QPushButton* deleteBtn;
     
     QModelIndex* selected;
-    //createConnectWindow *createConD;
+    createConnectWindow* createConD;
     MainWindow *mw;
     
     static QStringList getConnections();
     
+    
 public slots:
+    void Refresh();
     void Login();
-    void Refresh(QModelIndex index);
     void loginConnect();
     void openNewConn();
     void RemoveOneConn();
     
 private:
-    
-    
     void setupUI();
 };
 

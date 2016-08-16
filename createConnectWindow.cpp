@@ -129,11 +129,11 @@ void createConnectWindow::TestConnection()
     unsigned int nowPort = port.toInt();
     std::string nowUserName = userName.toStdString();
     std::string nowPswd = pswd.toStdString();
-    cout<<"\n";
-    cout<<nowHost;
-    cout<<nowUserName;
-    cout<<nowPswd;
-    cout<<"workbenchdb";
+    std::cout<<"\n";
+    std::cout<<nowHost;
+    std::cout<<nowUserName;
+    std::cout<<nowPswd;
+    std::cout<<"workbenchdb";
     
     MYSQL mysql;
     
@@ -155,7 +155,25 @@ void createConnectWindow::saveOptions()
     std::string nowUserName = userName.toStdString();
     std::string nowPswd = pswd.toStdString();
     
-    QStringList conns = connectwindow::getConnections();
+    char buffer[256];
+    QStringList messageList;
+    
+    std::ifstream fp("/Users/vaaaas/Documents/Program/QT/Workbench/Connections");
+    if(!fp.is_open()){
+        std::cout<<"Error opening file Connections";
+        exit(1);
+    }else{
+        while(!fp.eof())
+        {
+            fp.getline(buffer, 100);
+            QString *st=new QString(buffer);
+            messageList.append(*st);
+        }
+        fp.close();
+    }
+    
+    QStringList conns = messageList;
+    
     for (int i = 0; i<conns.length() - 1; i++)
     {
         QString str = ConnName;
@@ -168,8 +186,8 @@ void createConnectWindow::saveOptions()
     
     //!!!!!!!!
     //ofstream saveFile("/Users/vaaaas/Documents/Program/QT/Workbench/Connections");
-    ofstream saveFile;
-    saveFile.open("/Users/vaaaas/Documents/Program/QT/Workbench/Connections",ios::out|ios::ate|ios::app);
+    std::ofstream saveFile;
+    saveFile.open("/Users/vaaaas/Documents/Program/QT/Workbench/Connections",std::ios::out|std::ios::ate|std::ios::app);
     if(saveFile.is_open())
     {
         saveFile<<nowConnName;
@@ -184,7 +202,7 @@ void createConnectWindow::saveOptions()
         saveFile<<"\n";
         saveFile.close();
     }else{
-        cout << "Error opening file";
+        std::cout << "Error opening file";
     }
     
     this->hide();
