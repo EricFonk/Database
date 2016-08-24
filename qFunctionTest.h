@@ -13,22 +13,22 @@
 #include <QtGui>
 #include <QString>
 
-class qFunctionTest : public QWidget
+class QFunctionTest : public QWidget
 {
     Q_OBJECT
 public:
-    qFunctionTest();
-    void resetText(QString func_info);
-    void setAllName(QString db_name,QString func_name);
-    void setText(QString info);
+    QFunctionTest();
+    void ResetText(QString func_info);
+    void SetAllName(QString db_name,QString func_name);
+    void SetText(QString info);
 private:
     QPushButton *pushButton;
     QTextEdit *textInfo;
     QString info,funcName,dbName;
     private slots:
-    void applyFunction();
-    void dropFunction();
-    void alterFunction();
+    void ApplyFunction();
+	void DropTheFunction();
+    void AlterFunction();
 };
 
 #endif /* qFunctionTest_h */

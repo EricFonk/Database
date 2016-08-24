@@ -39,18 +39,18 @@ void InsertTable::SetHeaders(int col,QStringList headers)
 
 void InsertTable::ApplyInsert()
 {
-    QString myquery = "insert into "+tableName+" values(";
+    QString myQuery = "insert into "+tableName+" values(";
     for(int i=0;i<qSumCol;i++)
     {
-        myquery = myquery + "'" + table->item(0,i)->text() + "'";
+        myQuery = myQuery + "'" + table->item(0,i)->text() + "'";
         if(i!=(qSumCol-1))
         {
-            myquery = myquery + ",";
+            myQuery = myQuery + ",";
         }
     }
-    myquery = myquery + ");";
+    myQuery = myQuery + ");";
     std::string res;
-    res = executeWithQuery(0,myquery);
+    res = ExecuteWithQuery(0,myQuery);
     if(res.compare("success")==0)
     {
         qDebug("insert success");

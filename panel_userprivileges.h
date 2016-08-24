@@ -153,30 +153,30 @@ public:
 	QCheckBox *tab4CboxLockTables;
 
 	public slots:
-	void Refresh_Slot();
-	void Show_User_Slot();
-	void Create_User_Slot();
-	void Add_Acount_Slot();
-	void Revert_Slot();
-	void Expire_Password_Slot();
-	void Delete_Slot();
-	void Show_Privileges_Slot();
-	void Revoke_AllPrivileges_Slot();
-	void Authority_Management_Slot();
-	void Revert_CheckBox_Slot();
-	void User_Resource_Slot();
-	void Revert_User_Resource_Slot();
-	void Set_User_Resource_Slot();
+	void RefreshSlot();
+	void ShowUserSlot();
+	void CreateUserSlot();
+	void AddAcountSlot();
+	void RevertSlot();
+	void ExpirePasswordSlot();
+	void DeleteSlot();
+	void ShowPrivilegesSlot();
+	void RevokeAllPrivilegesSlot();
+	void AuthorityManagementSlot();
+	void RevertCheckBoxSlot();
+	void UserResourceSlot();
+	void RevertUserResourceSlot();
+	void SetUserResourceSlot();
 	//tab4
-	void Query_Schema_Slot();
-	void Add_Entry_Slot();
-	void Set_Schema_Privileges_Slot();
-	void Select_All_Slot();
-	void Unselect_All_Slot();
-	void Delete_Entry_Slot();
-	void Revoke_Schema_Privileges_Slot();
-	void Show_Schema_Privileges_Slot();
-	void Revert_Schema_Slot();
+	void QuerySchemaSlot();
+	void AddEntrySlot();
+	void SetSchemaPrivilegesSlot();
+	void SelectAllSlot();
+	void UnselectAllSlot();
+	void DeleteEntrySlot();
+	void RevokeSchemaPrivilegesSlot();
+	void ShowSchemaPrivilegesSlot();
+	void RevertSchemaSlot();
 };
 
 #endif // PANEL_USERPRIVILEGES_H

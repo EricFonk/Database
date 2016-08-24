@@ -11,43 +11,43 @@
 #include "mylistview.h"
 TableWidget::TableWidget()
 {
-    //æ’å…¥æ•°æ®æŒ‰é’®
+    //²åÈëÊı¾İ°´Å¥
     QPushButton *pushButton = new QPushButton(tr("insert"), this);
     pushButton->setGeometry(QRect(70, 40, 75, 23));
-    //åˆ é™¤æŸè¡ŒæŒ‰é’®
+    //É¾³ıÄ³ĞĞ°´Å¥
     QPushButton *pushButton2 = new QPushButton(tr("delete"), this);
     pushButton2->setGeometry(QRect(70, 40, 75, 23));
-    //åˆ·æ–°è¡¨æ•°æ®æŒ‰é’®
+    //Ë¢ĞÂ±íÊı¾İ°´Å¥
     QPushButton *pushButton3 = new QPushButton(tr("refresh"), this);
     pushButton2->setGeometry(QRect(70, 40, 75, 23));
-    //åˆå§‹åŒ–è¡¨æ ¼æ§ä»¶
+    //³õÊ¼»¯±í¸ñ¿Ø¼ş
     table = new QTableWidget(this);
     table->setColumnCount(1);
     table->setRowCount(1);
-    //åˆå§‹åŒ–è¡¨å¤´
+    //³õÊ¼»¯±íÍ·
     QStringList headers;
     headers << "new Column";
     table->setHorizontalHeaderLabels(headers);
-    //æ·»åŠ æ§ä»¶
+    //Ìí¼Ó¿Ø¼ş
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(table);
     mainLayout->addWidget(pushButton);
     mainLayout->addWidget(pushButton2);
     mainLayout->addWidget(pushButton3);
     this->setLayout(mainLayout);
-    //ç‚¹å‡»æŸä¸ªå•å…ƒæ ¼æ—¶è§¦å‘æ›´æ–°æ“ä½œ
+    //µã»÷Ä³¸öµ¥Ôª¸ñÊ±´¥·¢¸üĞÂ²Ù×÷
     connect(table, SIGNAL(clicked(QModelIndex)), this, SLOT(UpdateData(QModelIndex)));
-    //ç‚¹å‡»æ–°å¢æŒ‰é’®æ—¶å‘è¡¨æ ¼æ’å…¥ä¸€è¡Œ
+    //µã»÷ĞÂÔö°´Å¥Ê±Ïò±í¸ñ²åÈëÒ»ĞĞ
     connect(pushButton, SIGNAL(clicked()), this, SLOT(InsertLine()));
-    //ç‚¹å‡»åˆ é™¤æŒ‰é’®æ—¶è·å–é€‰ä¸­è¡Œå¹¶å°†å…¶åˆ é™¤
+    //µã»÷É¾³ı°´Å¥Ê±»ñÈ¡Ñ¡ÖĞĞĞ²¢½«ÆäÉ¾³ı
     connect(pushButton2, SIGNAL(clicked()), this, SLOT(DeleteLine()));
-    //ç‚¹å‡»åˆ·æ–°æŒ‰é’®æ—¶åˆ·æ–°è¡¨æ ¼ä¸­æ‰€æœ‰æ•°æ®
-    //å¾…æ”¹è¿› ç‚¹å‡»ååˆ¤æ–­æ•°æ®æ˜¯å¦å˜åŒ–å¹¶æç¤ºç”¨æˆ·ä¿å­˜æ”¹åŠ¨
+    //µã»÷Ë¢ĞÂ°´Å¥Ê±Ë¢ĞÂ±í¸ñÖĞËùÓĞÊı¾İ
+    //´ı¸Ä½ø µã»÷ºóÅĞ¶ÏÊı¾İÊÇ·ñ±ä»¯²¢ÌáÊ¾ÓÃ»§±£´æ¸Ä¶¯
     connect(pushButton3, SIGNAL(clicked()), this, SLOT(RefreshTableData()));
 }
-//è®¾ç½®è¡¨å¤´
+//ÉèÖÃ±íÍ·
 /*
-	è®¾ç½®åˆ—ä¸ªæ•° åˆ—åç§°
+	ÉèÖÃÁĞ¸öÊı ÁĞÃû³Æ
  */
 void TableWidget::SetHeaders(QString table_name,int col,QStringList headers,QString main,int pos)
 {
@@ -58,10 +58,10 @@ void TableWidget::SetHeaders(QString table_name,int col,QStringList headers,QStr
     table->setColumnCount(col);
     table->setHorizontalHeaderLabels(headers);
 }
-//æ–°å¢ä¸€è¡Œ
+//ĞÂÔöÒ»ĞĞ
 /*
-	åŠ å…¥InsertTableæ§ä»¶ä»¥å®Œæˆæ–°å¢è¡ŒåŠŸèƒ½
-	å¾…å®Œå–„
+	¼ÓÈëInsertTable¿Ø¼şÒÔÍê³ÉĞÂÔöĞĞ¹¦ÄÜ
+	´ıÍêÉÆ
  */
 void TableWidget::InsertLine()
 {
@@ -69,11 +69,11 @@ void TableWidget::InsertLine()
     t->show();
     t->SetHeaders(qSumCol,qHead);
 }
-//åŠ è½½è¡¨æ ¼æ•°æ®
+//¼ÓÔØ±í¸ñÊı¾İ
 /*
-	å°†ä¼ å…¥çš„dataä»¥//è¿›è¡Œåˆ†è§£
-	é‡ç½®è¡¨æ ¼è¡Œæ•°
-	é€šè¿‡è¡Œæ•°ä¸åˆ—æ•°éå†è¡¨æ ¼è®¾ç½®æ•°å€¼
+	½«´«ÈëµÄdataÒÔ//½øĞĞ·Ö½â
+	ÖØÖÃ±í¸ñĞĞÊı
+	Í¨¹ıĞĞÊıÓëÁĞÊı±éÀú±í¸ñÉèÖÃÊıÖµ
  */
 void TableWidget::InitTableData(QStringList data,int sumRow,int sumCol)
 {
@@ -92,11 +92,11 @@ void TableWidget::InitTableData(QStringList data,int sumRow,int sumCol)
         }
     }
 }
-//åˆ·æ–°è¡¨æ ¼æ•°æ®
+//Ë¢ĞÂ±í¸ñÊı¾İ
 /*
-	è·å–ä¸»é”®å
-	è°ƒç”¨æŸ¥è¯¢å‡½æ•°
-	è°ƒç”¨åŠ è½½æ•°æ®å‡½æ•°
+	»ñÈ¡Ö÷¼üÃû
+	µ÷ÓÃ²éÑ¯º¯Êı
+	µ÷ÓÃ¼ÓÔØÊı¾İº¯Êı
  */
 void TableWidget::RefreshTableData()
 {
@@ -104,16 +104,16 @@ void TableWidget::RefreshTableData()
     QString mainKey;
     int row,col,mainPos;
     bool mytest;
-    mytest=getMainKey(mainKey,tableName);
-    mytest=selectTest(tableName,real_head,real_data,row,col,mainKey,mainPos);
+    mytest=GetMainKey(mainKey,tableName);
+    mytest=SelectTest(tableName,real_head,real_data,row,col,mainKey,mainPos);
     InitTableData(real_data,row,col);
 }
 
-//æ›´æ–°æ•°æ®
+//¸üĞÂÊı¾İ
 /*
-	è·å–å½“å‰é€‰ä¸­çš„è¡Œæ•°å’Œåˆ—æ•°
-	è°ƒç”¨updateå‡½æ•°æ›´æ–°æ•°æ®åº“
-	è¿”å›æˆåŠŸæˆ–é”™è¯¯ä¿¡æ¯
+	»ñÈ¡µ±Ç°Ñ¡ÖĞµÄĞĞÊıºÍÁĞÊı
+	µ÷ÓÃupdateº¯Êı¸üĞÂÊı¾İ¿â
+	·µ»Ø³É¹¦»ò´íÎóĞÅÏ¢
  */
 void TableWidget::UpdateData(QModelIndex index)
 {
@@ -124,7 +124,7 @@ void TableWidget::UpdateData(QModelIndex index)
         int curRow,curCol;
         curCol = table->currentItem()->column();
         curRow = table->currentItem()->row();
-        string res=updateTest(tableName,qHead[curCol]+"='"+text+"'",mainKey+"='"+table->item(curRow,mainKeyPos)->text()+"'");
+        string res=UpdateTest(tableName,qHead[curCol]+"='"+text+"'",mainKey+"='"+table->item(curRow,mainKeyPos)->text()+"'");
         if(res.compare("success")==0)
         {
             table->setItem(curRow,curCol,new QTableWidgetItem(QString(text)));
@@ -140,12 +140,12 @@ void TableWidget::QSetErrorInfo(QString error)
 {
     errorInfo = error;
 }
-//åˆ é™¤æŸè¡Œ
+//É¾³ıÄ³ĞĞ
 /*
-	è·å–ç”¨æˆ·é€‰ä¸­çš„æ ¼å­çš„è¡Œæ•°
-	æç¤ºç”¨æˆ·æ˜¯å¦ç¡®å®šåˆ é™¤æœ¬è¡Œ
-	ç»„è£…åˆ é™¤è¯­å¥
-	è°ƒç”¨æ‰§è¡Œsqlè¯­å¥å‡½æ•°è¿›è¡Œæ•°æ®åˆ é™¤
+	»ñÈ¡ÓÃ»§Ñ¡ÖĞµÄ¸ñ×ÓµÄĞĞÊı
+	ÌáÊ¾ÓÃ»§ÊÇ·ñÈ·¶¨É¾³ı±¾ĞĞ
+	×é×°É¾³ıÓï¾ä
+	µ÷ÓÃÖ´ĞĞsqlÓï¾äº¯Êı½øĞĞÊı¾İÉ¾³ı
  */
 void TableWidget::DeleteLine()
 {
@@ -162,9 +162,9 @@ void TableWidget::DeleteLine()
     if(rb == QMessageBox::Yes)
     {
         qDebug("ok");
-        QString myquery;
-        myquery ="delete from "+tableName+" where "+mainKey+"='"+table->item(currentRow,mainKeyPos)->text()+"';";
-        string res=executeWithQuery(1,myquery);
+        QString myQuery;
+        myQuery ="delete from "+tableName+" where "+mainKey+"='"+table->item(currentRow,mainKeyPos)->text()+"';";
+        string res=ExecuteWithQuery(1,myQuery);
         
         if(res.compare("success")==0)
         {

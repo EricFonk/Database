@@ -31,7 +31,9 @@ SOURCES += main.cpp\
     tablewidget.cpp \
     connectwindow.cpp \
     createConnectWindow.cpp \
-    panel_userprivileges.cpp
+    panel_userprivileges.cpp \
+    codeeditor.cpp \
+    myhighlighter.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -47,4 +49,7 @@ HEADERS  += mainwindow.h \
     tablewidget.h \
     connectwindow.h \
     createConnectWindow.h \
-    panel_userprivileges.h
+    panel_userprivileges.h \
+    codeeditor.h \
+    typedef.h \
+    myhighlighter.h

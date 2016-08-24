@@ -43,32 +43,32 @@ public:
 	QStringList col_key;//键信息list
 	QStringList col_extra;//自增等额外约束（目前只有自增）
 	QStringList col_uni;//唯一约束 
-	void setDTName(QString dbname, QString tname);
-	void loadTableInfo();
+	void SetDTName(QString dbname, QString tname);
+	void LoadTableInfo();
 
 	//回退对视图数据最近一次的加列操作
-	void renameTable();
+	void RenameTable();
 	//回退对视图数据最近一次的删列操作
-	void rollBackLatestAddOperation(int oldColSum, int newColSum);
+	void RollBackLatestAddOperation(int oldColSum, int newColSum);
 	//回退对视图数据最近一次的所有更新操作
-	void rollBackLatestDropOperation(int tarColNum);
+	void RollBackLatestDropOperation(int tarColNum);
 	//确认最近的新增列操作（在数据库完成实际操作后对逻辑模型修改）
-	void confirmLatestAddOperation(int newColSum);
+	void ConfirmLatestAddOperation(int newColSum);
 	//确认最近的删列操作（在数据库完成实际操作后对逻辑模型修改）
-	void confirmLatestDropOperation(int tarColNum);
+	void ConfirmLatestDropOperation(int tarColNum);
 	//确认最近的列信息修改操作（在数据库完成实际操作后对逻辑模型修改）
-	void confirmLatestUpdateOperation();
+	void ConfirmLatestUpdateOperation();
 
-	void rollBackLatestUpdateOperation();
-	void comfirmLatestOpt(int optType);
-	void updateAllInfoAfter(QStringList colNumList,int optType);
+	void RollBackLatestUpdateOperation();
+	void ComfirmLatestOpt(int optType);
+	void UpdateAllInfoAfter(QStringList colNumList,int optType);
 	private slots:
-		void onDataChange(const QModelIndex &topLeft, QModelIndex &buttomRight);
-		void insertCol();
-		void confirmInsertCol();
-		void dropCol();
-		void applyAlter(bool);
-		void refreshAllInfo();
+		void OnDataChange(const QModelIndex &topLeft, QModelIndex &buttomRight);
+		void InsertCol();
+		void ConfirmInsertCol();
+		void DropCol();
+		void ApplyAlter(bool);
+		void RefreshAllInfo();
 };
 
 #endif /* table_alter_h */

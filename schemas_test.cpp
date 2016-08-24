@@ -30,23 +30,23 @@ SchemasTest::SchemasTest()
     mainLayout->addLayout(btnLayout);
     this->setLayout(mainLayout);
     
-    connect(insertBtn,SIGNAL(clicked()),this,SLOT(createDatabase()));
-    connect(dropBtn,SIGNAL(clicked()),this,SLOT(dropDatabase()));
+    connect(insertBtn,SIGNAL(clicked()),this,SLOT(CreateDatabase()));
+    connect(dropBtn,SIGNAL(clicked()),this,SLOT(DropDatabase()));
 }
 
-void SchemasTest::initData(QStringList list)
+void SchemasTest::InitData(QStringList list)
 {
     allDB = list;
     model->setStringList(list);
 }
 
-void SchemasTest::createDatabase()
+void SchemasTest::CreateDatabase()
 {
     bool isOK;
     QString text = QInputDialog::getText(NULL, "Update","update with new data",
                                          QLineEdit::Normal, "", &isOK);
     if(isOK) {
-        string res=createDBTest(text);
+        string res=CreateDBTest(text);
         if(res.compare("success")==0)
         {
             allDB<<text;
@@ -64,7 +64,7 @@ void SchemasTest::createDatabase()
     }
 }
 
-void SchemasTest::dropDatabase()
+void SchemasTest::DropDatabase()
 {
     int row = listView->currentIndex().row();
     QString drop = "are you sure to drop database "+allDB[row]+"  ?";
@@ -72,7 +72,7 @@ void SchemasTest::dropDatabase()
     if(rb == QMessageBox::Yes)
     {
         QString oldDB = allDB[row];
-        string res = dropDBTest(oldDB);
+        string res = DropDBTest(oldDB);
         if(res.compare("success")==0)
         {
             model->removeRows(row, 1); 

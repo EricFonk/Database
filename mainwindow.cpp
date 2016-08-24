@@ -9,27 +9,13 @@ MainWindow::MainWindow(QWidget *parent)
     sizePolicy.setHeightForWidth(this->sizePolicy().hasHeightForWidth());
     this->setSizePolicy(sizePolicy);
     
-    mainMenu = new QMenu(this);
+    mainMenu = new QMenu(0);
     QPushButton *createDB = new QPushButton("create database");
-    
-    menuBar=new QMenuBar(0);
-    
-    QAction *actionSsss = new QAction("Action01",menuBar);
-    actionSsss->setObjectName(QStringLiteral("actionSsss"));
-    QAction *actionSsss_2 = new QAction("Action02",menuBar);
-    actionSsss_2->setObjectName(QStringLiteral("actionSsss_2"));
-    
-    menuBar->setObjectName(QStringLiteral("menuBar"));
-    //menuBar->setGeometry(QRect(0, 0, 400, 22));
-    QMenu *menuHhh = new QMenu("菜单项01");
-    menuHhh->setObjectName(QStringLiteral("menuHhh"));
-    menuBar->addAction(menuHhh->menuAction());
-    menuHhh->addAction(actionSsss);
-    menuHhh->addSeparator();
-    menuHhh->addAction(actionSsss_2);
-    this->setMenuBar(menuBar);
-    
-    centralwidget = new QWidget(this);
+	/****************创建菜单**************************/
+	CreateAction();
+	CreateMenu();
+	/****************************************************************/
+	centralwidget = new QWidget();
     centralwidget->setObjectName(QStringLiteral("centralwidget"));
     gridLayout = new QGridLayout(centralwidget);
     gridLayout->setObjectName(QStringLiteral("gridLayout"));
@@ -109,11 +95,19 @@ MainWindow::MainWindow(QWidget *parent)
     
     rightLayout=new QVBoxLayout();
     rightLayout->addWidget(dataView);
-    //rightLayout->addWidget(createDB);
     rightWidget->setLayout(rightLayout);
+    
+    QVBoxLayout *rightViceLayout=new QVBoxLayout();
+    CodeEditor *configEditor = new CodeEditor();
+    configEditor->setMode(EDIT);
+    gridLayout->addWidget(configEditor);
+    MyHighLighter *highlighter = new MyHighLighter(configEditor->document());
+    rightViceLayout->addWidget(configEditor);
+    
     
     QWidget *rightBlankTab=new QWidget();
     rightBlankTab->setObjectName("rightBlankTab");
+    rightBlankTab->setLayout(rightViceLayout);
     
     rightTabWidg->addTab(rightWidget, "Right Tab");
     rightTabWidg->addTab(rightBlankTab, "Right Blank Tab");
@@ -121,22 +115,23 @@ MainWindow::MainWindow(QWidget *parent)
     tabGridLayout->addWidget(leftTabWidg, 0, 0, 1, 1);
     tabGridLayout->addWidget(rightTabWidg, 0, 1, 1, 1);
     
-    //gridLayout->addWidget(menuBar);
-    gridLayout->addWidget(mainTabWidg);
-    
+	//gridLayout->addWidget(panelMenu,0,0);
+    gridLayout->addWidget(mainTabWidg,1,0);
+   
+
     this->setCentralWidget(centralwidget);
     
     //menuBar->setGeometry(0,0,this->width(),30);
     resize(950, 650);
     
-    manageTreeInit();
-    schemaTreeInit();
+    ManageTreeInit();
+    SchemaTreeInit();
 
-    connect(manageTree,SIGNAL(itemClicked(QTreeWidgetItem*,int)),this,SLOT(initManageInfo(QTreeWidgetItem*,int)));
-    connect(schemaTree,SIGNAL(itemClicked(QTreeWidgetItem*,int)),this,SLOT(initOneDBInfo(QTreeWidgetItem*,int)));
-    connect(schemaTree,SIGNAL(customContextMenuRequested(const QPoint&)),this,SLOT(showMenu(const QPoint&)));
-    //connect(createDB,SIGNAL(clicked()),this,SLOT(createSchema()));
-    
+    connect(manageTree,SIGNAL(itemClicked(QTreeWidgetItem*,int)),this,SLOT(InitManageInfo(QTreeWidgetItem*,int)));
+    connect(schemaTree,SIGNAL(itemClicked(QTreeWidgetItem*,int)),this,SLOT(InitOneDBInfo(QTreeWidgetItem*,int)));
+    connect(schemaTree,SIGNAL(customContextMenuRequested(const QPoint&)),this,SLOT(ShowMenu(const QPoint&)));
+    //connect(createDB,SIGNAL(clicked()),this,SLOT(CreateSchema()));
+
     QMetaObject::connectSlotsByName(this);
 }
 
@@ -145,14 +140,173 @@ MainWindow::~MainWindow()
 
 }
 
+//建立菜单
+void MainWindow::CreateMenu()
+{
+	fileMenu = menuBar()->addMenu(tr("File"));
+	fileMenu->addAction(newQueryTab);
+	fileMenu->addSeparator();
+	fileMenu->addAction(newModel);
+	fileMenu->addAction(openModel);
+	fileMenu->addAction(saveModel);
+	fileMenu->addSeparator();
+	fileMenu->addAction(closeConnectionTab);
+	fileMenu->addAction(closeTab);
+	fileMenu->addSeparator();
+	fileMenu->addAction(exit);
+	/**************************************/
+	editMenu = menuBar()->addMenu(tr("Edit"));
+	editMenu->addAction(undoSql);
+	editMenu->addAction(redoSql);
+	editMenu->addSeparator();
+	editMenu->addAction(cutSql);
+	editMenu->addAction(copySql);
+	editMenu->addAction(pasteSql);
+	editMenu->addAction(deleteSql);
+	editMenu->addSeparator();
+	editMenu->addAction(selectAll);
+	editMenu->addSeparator();
+	find = editMenu->addMenu(tr("Find"));
+	find->addAction(findOnly);
+	find->addAction(findAndReplace);
+	/******************************************/
+	viewMenu = menuBar()->addMenu(tr("View"));
+	viewMenu->addAction(home);
+	viewMenu->addSeparator();
+	panels = viewMenu->addMenu(tr("Panels"));
+	panels->addAction(hideSidebar);
+	panels->addAction(hideSecondarySidebar);
+	panels->addAction(hideOutputArea);
+	viewMenu->addAction(output);
+	viewMenu->addSeparator();
+	viewMenu->addAction(selectNextMainTab);
+	viewMenu->addAction(selectPreviousMainTab);
+	viewMenu->addSeparator();
+	lineNumbers = viewMenu->addMenu(tr("Line Numbers"));
+	lineNumbers->addAction(showLineNumbers);
+	lineNumbers->addAction(hideLineNumbers);
+	/**********************************************/
+	queryMenu = menuBar()->addMenu(tr("Query"));
+	queryMenu->addAction(executeAOS);
+	queryMenu->addAction(executeAOSText);
+	queryMenu->addSeparator();
+	queryMenu->addAction(executeCS);
+	queryMenu->addAction(executeCSVTO);
+	queryMenu->addSeparator();
+	queryMenu->addAction(reconnectToServer);
+	queryMenu->addSeparator();
+	queryMenu->addAction(newTabToCurrentServer);
+	/*************************************************/
+	databaseMenu = menuBar()->addMenu(tr("Database"));
+	databaseMenu->addAction(connectToDatabase);
+	/************************************************/
+	serverMenu = menuBar()->addMenu(tr("Server"));
+	serverMenu->addAction(serverStatus);
+	serverMenu->addAction(clientConnection);
+	serverMenu->addAction(usersAndPrivileges);
+	serverMenu->addAction(statusAndSystemVariables);
+	serverMenu->addSeparator();
+	serverMenu->addAction(dataExport);
+	serverMenu->addAction(dataImport);
+	serverMenu->addSeparator();
+	serverMenu->addAction(startupShutdown);
+	serverMenu->addAction(serverLogs);
+	/*****************************************************/
+	//工具菜单
+	toolsMenu = menuBar()->addMenu(tr("Tools"));
+	//脚本处理菜单
+	scriptingMenu = menuBar()->addMenu(tr("Scripting"));
+	//帮助菜单
+	helpMenu = menuBar()->addMenu(tr("Help"));
+	helpMenu->addAction(locateLogFiles);
+	helpMenu->addAction(showLogFile);
+}
+//槽函数
+
+//建立菜单动作
+void MainWindow::CreateAction()
+{
+	newModel = new QAction(tr("New Model"), this);
+	newModel->setShortcut(Qt::CTRL | Qt::Key_N);
+	newQueryTab = new QAction(tr("New Query Tab"), this);
+	newQueryTab->setShortcut(Qt::CTRL|Qt::Key_T);
+	openModel = new QAction(tr("Open Model"), this);
+	openModel->setShortcut(Qt::CTRL|Qt::Key_O);
+	saveModel = new QAction(tr("Save Model"), this);
+	saveModel->setShortcut(Qt::CTRL|Qt::Key_S);
+	closeConnectionTab = new QAction(tr("Close Connection Tab"), this);
+	closeConnectionTab->setShortcut(Qt::CTRL | Qt::SHIFT|Qt::Key_F4);
+	closeTab = new QAction(tr("Close Tab"), this);
+	closeTab->setShortcut(Qt::CTRL | Qt::Key_W);
+	exit = new QAction(tr("Exit"), this);
+	exit->setShortcut(Qt::ALT | Qt::Key_F4);
+	/****************************************/
+	undoSql = new QAction(tr("Undo"), this);
+	undoSql->setShortcut(Qt::CTRL | Qt::Key_Z);
+	redoSql = new QAction(tr("Redo"), this);
+	redoSql->setShortcut(Qt::CTRL | Qt::Key_Y);
+	cutSql = new QAction(tr("Cut"), this);
+	cutSql->setShortcut(Qt::CTRL | Qt::Key_X);
+	copySql = new QAction(tr("Copy"), this);
+	copySql->setShortcut(Qt::CTRL | Qt::Key_C);
+	pasteSql = new QAction(tr("Paste"), this);
+	pasteSql->setShortcut(Qt::CTRL | Qt::Key_V);
+	deleteSql = new QAction(tr("Delete"), this);
+	selectAll = new QAction(tr("Select All"), this);
+	selectAll->setShortcut(Qt::CTRL | Qt::Key_A);
+	findOnly = new QAction(tr("Find"), this);
+	findOnly->setShortcut(Qt::CTRL | Qt::Key_F);
+	findAndReplace = new QAction(tr("Find And Replace"), this);
+	findAndReplace->setShortcut(Qt::CTRL | Qt::Key_H);
+	/*************************************************/
+	home = new QAction(tr("Home"), this);
+	
+	hideSidebar = new QAction(tr("Hide Sidebar"), this);
+	hideSecondarySidebar = new QAction(tr("Hide Secondary Sidebar"), this);
+	hideOutputArea = new QAction(tr("Hide Output Area"), this);
+	output = new QAction(tr("Output"), this);
+	output->setShortcut(Qt::CTRL | Qt::Key_F2);
+	selectNextMainTab = new QAction(tr("Select Next Main Tab"), this);
+	selectNextMainTab->setShortcut(Qt::ALT | Qt::SHIFT | Qt::Key_Right);
+	selectPreviousMainTab = new QAction(tr("Select Previous Main Tab"), this);
+	selectPreviousMainTab->setShortcut(Qt::ALT | Qt::SHIFT|Qt::Key_Left);
+	hideLineNumbers = new QAction(tr("Hide Line Numbers"), this);
+	showLineNumbers = new QAction(tr("Show Line Numbers"), this);
+	/**********************************************************/
+	executeAOS = new QAction(tr("Execute (All or Selection)"), this);
+	executeAOS->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_Enter);
+	executeAOSText = new QAction(tr("Execute (All or Selection) to Text"), this);
+	executeCS = new QAction(tr("Execute Current Statement"), this);
+	executeCS->setShortcut(Qt::CTRL|Qt::Key_Enter);
+	executeCSVTO = new QAction(tr("Execute Current Statement (Vertical Text Output)"), this);
+	executeCSVTO->setShortcut(Qt::CTRL | Qt::ALT | Qt::Key_Enter);
+	reconnectToServer = new QAction(tr("Reconnect To Server"), this);
+	newTabToCurrentServer = new QAction(tr("New Tab To Current Server"), this);
+	newTabToCurrentServer->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_T);
+	/**********************************************************/
+	connectToDatabase = new QAction(tr("Connect To Database"), this);
+	connectToDatabase->setShortcut(Qt::CTRL|Qt::Key_U);
+	/**********************************************************/
+	serverStatus = new QAction(tr("Server Status"), this);
+	clientConnection = new QAction(tr("Client Connection"), this);
+	usersAndPrivileges = new QAction(tr("Users And Privileges"), this);
+	statusAndSystemVariables = new QAction(tr("Status And System Variables"), this);
+	dataExport = new QAction(tr("Data Export"), this);
+	dataImport = new QAction(tr("Data Import"), this);
+	startupShutdown = new QAction(tr("Startup/Shutdown"), this);
+	serverLogs = new QAction(tr("Server Logs"), this);
+	/*************************************************************/
+	locateLogFiles = new QAction(tr("Locate Log Files"), this);
+	showLogFile = new QAction(tr("Show Log File"), this);
+}
 //新建数据库
-void MainWindow::createSchema()
+void MainWindow::CreateSchema()
 {
     bool isOK;
     QString text = QInputDialog::getText(NULL, "CreateDatabase","insert a new name",
                                          QLineEdit::Normal, "", &isOK);
     if(isOK) {
-        std::string res=createDBTest(text);
+        std::string res=CreateDBTest(text);
         if(res.compare("success")==0)
         {
             allDB<<text;
@@ -166,7 +320,7 @@ void MainWindow::createSchema()
 }
 
 //右键事件监听 右键菜单项设置
-void MainWindow::showMenu(const QPoint&)
+void MainWindow::ShowMenu(const QPoint&)
 {
     //判断是否选中根节点 弹出数据库右键菜单
     if(schemaTree->currentItem()->parent()==NULL)
@@ -174,7 +328,7 @@ void MainWindow::showMenu(const QPoint&)
         mainMenu->clear();
         QAction *deleteSchema = new QAction("delete this schema",this);
         mainMenu->addAction(deleteSchema);
-        connect(deleteSchema,SIGNAL(triggered()),this,SLOT(deleteOneSchema()));
+        connect(deleteSchema,SIGNAL(triggered()),this,SLOT(DeleteOneSchema()));
         mainMenu->exec(QCursor::pos());
         
     }
@@ -184,7 +338,7 @@ void MainWindow::showMenu(const QPoint&)
         mainMenu->clear();
         QAction *createTable = new QAction("create new table",this);
         mainMenu->addAction(createTable);
-        connect(createTable,SIGNAL(triggered()),this,SLOT(createOneTable()));
+        connect(createTable,SIGNAL(triggered()),this,SLOT(CreateOneTable()));
         mainMenu->exec(QCursor::pos());
     }
     //弹出函数右键菜单
@@ -193,7 +347,7 @@ void MainWindow::showMenu(const QPoint&)
         mainMenu->clear();
         QAction *createFunc = new QAction("create new function",this);
         mainMenu->addAction(createFunc);
-        connect(createFunc,SIGNAL(triggered()),this,SLOT(createOneFunc()));
+        connect(createFunc,SIGNAL(triggered()),this,SLOT(CreateOneFunc()));
         mainMenu->exec(QCursor::pos());
     }
     //弹出过程右键函数
@@ -202,7 +356,7 @@ void MainWindow::showMenu(const QPoint&)
         mainMenu->clear();
         QAction *createPro = new QAction("create new procedure",this);
         mainMenu->addAction(createPro);
-        connect(createPro,SIGNAL(triggered()),this,SLOT(createOnePro()));
+        connect(createPro,SIGNAL(triggered()),this,SLOT(CreateOnePro()));
         mainMenu->exec(QCursor::pos());
     }
     //弹出视图右键菜单
@@ -211,7 +365,7 @@ void MainWindow::showMenu(const QPoint&)
         mainMenu->clear();
         QAction *createView = new QAction("create new view",this);
         mainMenu->addAction(createView);
-        connect(createView,SIGNAL(triggered()),this,SLOT(createOneView()));
+        connect(createView,SIGNAL(triggered()),this,SLOT(CreateOneView()));
         mainMenu->exec(QCursor::pos());
     }
     //弹出单表右键菜单
@@ -223,8 +377,8 @@ void MainWindow::showMenu(const QPoint&)
         QAction *tableAction2 = new QAction("alter table",this);
         mainMenu->addAction(tableAction2);
         
-        connect(tableAction1,SIGNAL(triggered()),this,SLOT(selectAllofOneTable()));
-        connect(tableAction2,SIGNAL(triggered()),this,SLOT(alterOneTable()));
+        connect(tableAction1,SIGNAL(triggered()),this,SLOT(SelectAllofOneTable()));
+        connect(tableAction2,SIGNAL(triggered()),this,SLOT(AlterOneTable()));
         mainMenu->exec(QCursor::pos());
         //connect(addAction,SIGNAL(triggered()),this,SLOT(testadd()));
     }
@@ -234,7 +388,7 @@ void MainWindow::showMenu(const QPoint&)
         mainMenu->clear();
         QAction *funcAction1 = new QAction("alter function",this);
         mainMenu->addAction(funcAction1);
-        connect(funcAction1,SIGNAL(triggered()),this,SLOT(initOneFunction()));
+        connect(funcAction1,SIGNAL(triggered()),this,SLOT(InitOneFunction()));
         mainMenu->exec(QCursor::pos());
     }
     //弹出单过程右键菜单
@@ -243,7 +397,7 @@ void MainWindow::showMenu(const QPoint&)
         mainMenu->clear();
         QAction *proAction1 = new QAction("alter procedure",this);
         mainMenu->addAction(proAction1);
-        connect(proAction1,SIGNAL(triggered()),this,SLOT(initOneProcedure()));
+        connect(proAction1,SIGNAL(triggered()),this,SLOT(InitOneProcedure()));
         mainMenu->exec(QCursor::pos());
     }
     //弹出单视图右键菜单
@@ -252,12 +406,12 @@ void MainWindow::showMenu(const QPoint&)
         mainMenu->clear();
         QAction *viewAction1 = new QAction("alter view",this);
         mainMenu->addAction(viewAction1);
-        connect(viewAction1,SIGNAL(triggered()),this,SLOT(initOneView()));
+        connect(viewAction1,SIGNAL(triggered()),this,SLOT(InitOneView()));
         mainMenu->exec(QCursor::pos());
     }
 }
 
-void MainWindow::selectAllofOneTable()
+void MainWindow::SelectAllofOneTable()
 {
     QStringList real_head,real_data,schemas,tables,req_allDB;
     int row,col,mainPos;
@@ -265,11 +419,11 @@ void MainWindow::selectAllofOneTable()
     string resflag;
     bool flag1,flag2;
     
-    resflag = executeWithQuery(1,"use "+schemaTree->currentItem()->parent()->parent()->text(0)+";");
+    resflag = ExecuteWithQuery(1,"use "+schemaTree->currentItem()->parent()->parent()->text(0)+";");
     if(resflag.compare("success")==0)
     {
-        flag1 = getMainKey(mainKey,schemaTree->currentItem()->text(0));
-        flag2 = selectTest(schemaTree->currentItem()->text(0),real_head,real_data,row,col,mainKey,mainPos);
+        flag1 = GetMainKey(mainKey,schemaTree->currentItem()->text(0));
+        flag2 = SelectTest(schemaTree->currentItem()->text(0),real_head,real_data,row,col,mainKey,mainPos);
         
         if(flag1&&flag2){
             QWidget *temp = rightLayout->itemAt(0)->widget();
@@ -285,7 +439,7 @@ void MainWindow::selectAllofOneTable()
     
 }
 
-void MainWindow::createOneTable()
+void MainWindow::CreateOneTable()
 {
     QWidget *mytemp = rightLayout->itemAt(0)->widget();
     rightLayout->removeWidget(mytemp);
@@ -294,18 +448,18 @@ void MainWindow::createOneTable()
     tableCreate = new TableCrt();
     rightLayout->addWidget(tableCreate);
     hasCrtTable = true;
-    tableCreate->setDBName(schemaTree->currentItem()->parent()->text(0));
+    tableCreate->SetDBName(schemaTree->currentItem()->parent()->text(0));
     
-	connect(tableCreate,SIGNAL(createTableSuccess(QString)),this,SLOT(addTableToTree(QString)));
+	connect(tableCreate,SIGNAL(CreateTableSuccess(QString)),this,SLOT(AddTableToTree(QString)));
 }
 
-void MainWindow::addTableToTree(QString newTableName)
+void MainWindow::AddTableToTree(QString newTableName)
 {
 	QTreeWidgetItem *table_leaf = new QTreeWidgetItem(schemaTree->currentItem(),QStringList(newTableName));
 	schemaTree->currentItem()->addChild(table_leaf);
 }
 
-void MainWindow::alterOneTable()
+void MainWindow::AlterOneTable()
 {
     QWidget *mytemp = rightLayout->itemAt(0)->widget();
     rightLayout->removeWidget(mytemp);
@@ -314,92 +468,92 @@ void MainWindow::alterOneTable()
     tableAlter = new TableAlt();
     rightLayout->addWidget(tableAlter);
     hasCrtTable = true;
-    tableAlter->setDTName(schemaTree->currentItem()->parent()->parent()->text(0),schemaTree->currentItem()->text(0));
-    tableAlter->loadTableInfo();
+    tableAlter->SetDTName(schemaTree->currentItem()->parent()->parent()->text(0),schemaTree->currentItem()->text(0));
+    tableAlter->LoadTableInfo();
 }
 
-void MainWindow::createOneFunc()
+void MainWindow::CreateOneFunc()
 {
     QWidget *mytemp = rightLayout->itemAt(0)->widget();
     rightLayout->removeWidget(mytemp);
     delete(mytemp);
     
-    qFunctionTest *funcTable = new qFunctionTest();
+    QFunctionTest *funcTable = new QFunctionTest();
     rightLayout->addWidget(funcTable);
-    funcTable->setAllName(schemaTree->currentItem()->parent()->parent()->text(0),"xx");
+    funcTable->SetAllName(schemaTree->currentItem()->parent()->parent()->text(0),"xx");
 }
 
-void MainWindow::initOneFunction()
+void MainWindow::InitOneFunction()
 {
     QWidget *mytemp = rightLayout->itemAt(0)->widget();
     rightLayout->removeWidget(mytemp);
     delete(mytemp);
     
-    qFunctionTest *funcTable = new qFunctionTest();
+    QFunctionTest *funcTable = new QFunctionTest();
     rightLayout->addWidget(funcTable);
     QString res;
-    res = get_function(schemaTree->currentItem()->parent()->parent()->parent()->text(0),schemaTree->currentItem()->text(0));
-    funcTable->setText(res);
-    funcTable->setAllName(schemaTree->currentItem()->parent()->parent()->parent()->text(0),schemaTree->currentItem()->text(0));
+    res = GetFunction(schemaTree->currentItem()->parent()->parent()->parent()->text(0),schemaTree->currentItem()->text(0));
+    funcTable->SetText(res);
+    funcTable->SetAllName(schemaTree->currentItem()->parent()->parent()->parent()->text(0),schemaTree->currentItem()->text(0));
 }
 
-void MainWindow::createOnePro()
+void MainWindow::CreateOnePro()
 {
     QWidget *mytemp = rightLayout->itemAt(0)->widget();
     rightLayout->removeWidget(mytemp);
     delete(mytemp);
     
-    qProcedureTest *proTable = new qProcedureTest();
+    QProcedureTest *proTable = new QProcedureTest();
     rightLayout->addWidget(proTable);
-    proTable->setAllName(schemaTree->currentItem()->parent()->parent()->text(0),"");
+    proTable->SetAllName(schemaTree->currentItem()->parent()->parent()->text(0),"");
 }
 
-void MainWindow::initOneProcedure()
+void MainWindow::InitOneProcedure()
 {
     QWidget *mytemp = rightLayout->itemAt(0)->widget();
     rightLayout->removeWidget(mytemp);
     delete(mytemp);
     
-    qProcedureTest *proTable = new qProcedureTest();
+    QProcedureTest *proTable = new QProcedureTest();
     rightLayout->addWidget(proTable);
     QString res;
-    res = get_procedure(schemaTree->currentItem()->parent()->parent()->parent()->text(0),schemaTree->currentItem()->text(0));
-    proTable->setText(res);
-    proTable->setAllName(schemaTree->currentItem()->parent()->parent()->parent()->text(0),schemaTree->currentItem()->text(0));
+    res = GetProcedure(schemaTree->currentItem()->parent()->parent()->parent()->text(0),schemaTree->currentItem()->text(0));
+    proTable->SetText(res);
+    proTable->SetAllName(schemaTree->currentItem()->parent()->parent()->parent()->text(0),schemaTree->currentItem()->text(0));
 }
 
-void MainWindow::createOneView()
+void MainWindow::CreateOneView()
 {
     QWidget *mytemp = rightLayout->itemAt(0)->widget();
     rightLayout->removeWidget(mytemp);
     delete(mytemp);
     
-    qViewTest *viewTable = new qViewTest();
+    QViewTest *viewTable = new QViewTest();
     rightLayout->addWidget(viewTable);
-    viewTable->setAllName(schemaTree->currentItem()->parent()->text(0),"");
+    viewTable->SetAllName(schemaTree->currentItem()->parent()->text(0),"");
 }
 
-void MainWindow::initOneView()
+void MainWindow::InitOneView()
 {
     QWidget *mytemp = rightLayout->itemAt(0)->widget();
     rightLayout->removeWidget(mytemp);
     delete(mytemp);
     
-    qViewTest *viewTable = new qViewTest();
+    QViewTest *viewTable = new QViewTest();
     rightLayout->addWidget(viewTable);
     QString res;
-    res = get_view(schemaTree->currentItem()->parent()->parent()->text(0),schemaTree->currentItem()->text(0));
-    viewTable->setText(res);
-    viewTable->setAllName(schemaTree->currentItem()->parent()->parent()->text(0),schemaTree->currentItem()->text(0));
+    res = GetView(schemaTree->currentItem()->parent()->parent()->text(0),schemaTree->currentItem()->text(0));
+    viewTable->SetText(res);
+    viewTable->SetAllName(schemaTree->currentItem()->parent()->parent()->text(0),schemaTree->currentItem()->text(0));
 }
 
-void MainWindow::deleteOneSchema()
+void MainWindow::DeleteOneSchema()
 {
     QString drop = "are you sure to drop database "+schemaTree->currentItem()->text(0)+"  ?";
     QMessageBox::StandardButton rb = QMessageBox::question(NULL,"Drop",drop,QMessageBox::Yes|QMessageBox::No,QMessageBox::Yes);
     if(rb == QMessageBox::Yes)
     {
-        string res = dropDBTest(schemaTree->currentItem()->text(0));
+        string res = DropDBTest(schemaTree->currentItem()->text(0));
         if(res.compare("success")==0)
         {
             delete(schemaTree->currentItem());
@@ -411,11 +565,11 @@ void MainWindow::deleteOneSchema()
     }
 }
 //命名规范
-void MainWindow::schemaTreeInit()
+void MainWindow::SchemaTreeInit()
 {
     QStringList initAllDB;
     string res;
-    res = getAllDatabases(initAllDB);
+    res = GetAllDatabases(initAllDB);
     allDB = initAllDB;
     for(int i=0;i<initAllDB.length();i++)
     {
@@ -423,14 +577,14 @@ void MainWindow::schemaTreeInit()
     }
 }
 
-void MainWindow::manageTreeInit()
+void MainWindow::ManageTreeInit()
 {
     QTreeWidgetItem *temp_root = new QTreeWidgetItem(manageTree,QStringList("Variables"));
     QTreeWidgetItem *temp_root2 = new QTreeWidgetItem(manageTree,QStringList("Connections"));
     QTreeWidgetItem *temp_root3 = new QTreeWidgetItem(manageTree,QStringList("Users and Privileges"));
 }
 
-void MainWindow::initManageInfo(QTreeWidgetItem *temp_root, int temp)
+void MainWindow::InitManageInfo(QTreeWidgetItem *temp_root, int temp)
 {
     QTableView *dataView;
     dataView=new QTableView(mainTabWidg);
@@ -444,7 +598,7 @@ void MainWindow::initManageInfo(QTreeWidgetItem *temp_root, int temp)
         rightLayout->removeWidget(temp);
         delete(temp);
         
-        QStandardItemModel *model = getConnections(model);
+        QStandardItemModel *model = GetConnections(model);
         
         rightLayout->addWidget(dataView);
         dataView->setModel(model);
@@ -463,12 +617,12 @@ void MainWindow::initManageInfo(QTreeWidgetItem *temp_root, int temp)
         {
             model->setHeaderData(i, Qt::Vertical, QVariant(str[i].c_str()));
             QModelIndex index = model->index(i, 0, QModelIndex());
-            model->setData(index, QVariant(getOneVariable(str[i])));
+            model->setData(index, QVariant(GetOneVariable(str[i])));
         }
         
         rightLayout->addWidget(dataView);
         dataView->setModel(model);
-        dataView->update();
+        //dataView->update();
     }else if(manageTree->currentItem()->text(0).compare("Users and Privileges")==0){
         QWidget *temp = rightLayout->itemAt(0)->widget();
         rightLayout->removeWidget(temp);
@@ -482,25 +636,25 @@ void MainWindow::initManageInfo(QTreeWidgetItem *temp_root, int temp)
 }
 
 
-void MainWindow::initOneDBInfo(QTreeWidgetItem *temp_root, int temp)
+void MainWindow::InitOneDBInfo(QTreeWidgetItem *temp_root, int temp)
 {
     if(schemaTree->currentItem()->parent()==NULL&&schemaTree->currentItem()->childCount()==0)
     {
         QString temp2 = temp_root->text(0);
         //qDebug("%s",temp2);
-        initTables();
-        initViews();
-        initRoutines();
+        InitTables();
+        InitViews();
+        InitRoutines();
     }
 }
 
-void MainWindow::initTables()
+void MainWindow::InitTables()
 {
     QTreeWidgetItem *root = new QTreeWidgetItem(schemaTree->currentItem(),QStringList(QString("Tables")));
     QString dbName = schemaTree->currentItem()->text(0);
     string res;
     QStringList table_list;
-    res = getAllTables(table_list,dbName);
+    res = GetAllTables(table_list,dbName);
     if(res.compare("success")==0&&table_list.length()!=0)
     {
 		for(int t=0;t<table_list.length();t++)
@@ -511,13 +665,13 @@ void MainWindow::initTables()
     }
 }
 
-void MainWindow::initViews()
+void MainWindow::InitViews()
 {
     QTreeWidgetItem *root = new QTreeWidgetItem(schemaTree->currentItem(),QStringList(QString("Views")));
     QString dbName = schemaTree->currentItem()->text(0);
     string res;
     QStringList view_list;
-    res = find_views(dbName,view_list);
+    res = FindViews(dbName,view_list);
     if(res.compare("success")==0&&view_list.length()!=0)
     {
         QTreeWidgetItem *view_leaf = new QTreeWidgetItem(root,view_list);
@@ -528,7 +682,7 @@ void MainWindow::initViews()
     qDebug("ok");
 }
 
-void MainWindow::initRoutines()
+void MainWindow::InitRoutines()
 {
     QTreeWidgetItem *root = new QTreeWidgetItem(schemaTree->currentItem(),QStringList(QString("Routines")));
     QTreeWidgetItem *leaf1 = new QTreeWidgetItem(root,QStringList(QString("procedure")));
@@ -536,13 +690,13 @@ void MainWindow::initRoutines()
     QString dbName = schemaTree->currentItem()->text(0);
     string res;
     QStringList pro_list,func_list;
-    res = find_pros(dbName,pro_list);
+    res = FindPros(dbName,pro_list);
     if(res.compare("success")==0&&pro_list.length()!=0)
     {
         QTreeWidgetItem *pro_leaf = new QTreeWidgetItem(leaf1,pro_list);
         schemaTree->currentItem()->addChild(pro_leaf);
     }
-    res = find_funcs(dbName,func_list);
+    res = FindFuncs(dbName,func_list);
     if(res.compare("success")==0&&func_list.length()!=0)
     {
         QTreeWidgetItem *func_leaf = new QTreeWidgetItem(leaf2,func_list);

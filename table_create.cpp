@@ -11,20 +11,20 @@
 
 TableCrt::TableCrt()
 {
-    //åˆå§‹åŒ–æ•°æ®ç±»å‹ä¸‹æ‹‰åˆ—è¡¨
+    //³õÊ¼»¯Êı¾İÀàĞÍÏÂÀ­ÁĞ±í
     QComboBox *datatype = new QComboBox();
-    QStringList datalist;//æ•°æ®ç±»å‹åˆ—è¡¨
+    QStringList datalist;//Êı¾İÀàĞÍÁĞ±í
     datalist<<"int"<<"varchar(45)"<<"char(45)"<<"float"<<"double"<<"boolean"<<"tinyint"<<"smallint"<<"bigint"<<"tinyint"<<"datetime";
     datatype->addItems(datalist);
-    //è®¾ç½®è¡¨æ ¼è¡Œåˆ—
+    //ÉèÖÃ±í¸ñĞĞÁĞ
     tableOpt = new QTableWidget(this);
     tableOpt->setColumnCount(9);
     tableOpt->setRowCount(1);
-    //è®¾ç½®è¡¨å¤´
+    //ÉèÖÃ±íÍ·
     QStringList headers;
     headers<<"column name"<<"datatype"<<"PK"<<"NN"<<"UQ"<<"BIN"<<"UN"<<"AI"<<"default";
     tableOpt->setHorizontalHeaderLabels(headers);
-    //æ·»åŠ ä¸‹æ‹‰æ¡†
+    //Ìí¼ÓÏÂÀ­¿ò
     tableOpt->setCellWidget(0,1,datatype);
     for(int i=2;i<8;i++)
     {
@@ -32,14 +32,14 @@ TableCrt::TableCrt()
         check->setCheckState(Qt::Unchecked);
         tableOpt->setItem(0,i,check);
     }
-    //å‘widgetä¸­æ·»åŠ ç»„ä»¶
-    newTableName = new QLineEdit(this);//æ–°è¡¨åè¾“å…¥æ¡†
+    //ÏòwidgetÖĞÌí¼Ó×é¼ş
+    newTableName = new QLineEdit(this);//ĞÂ±íÃûÊäÈë¿ò
     newTableName->setPlaceholderText("please input a table name");
     QLabel *tableName = new QLabel(tr("new table name"),this);
     QLabel *dbLabel = new QLabel(tr("Schema"),this);
-    dbNameLabel = new QLabel(dbName,this);//æ‰€å±æ¨¡å¼å
-    QPushButton *applyBtn = new QPushButton(tr("apply"),this);//æäº¤æŒ‰é’®
-    QPushButton *insertBtn = new QPushButton(tr("insert new column"),this);//æ·»åŠ æ–°åˆ—ï¼Ÿ
+    dbNameLabel = new QLabel(dbName,this);//ËùÊôÄ£Ê½Ãû
+    QPushButton *applyBtn = new QPushButton(tr("apply"),this);//Ìá½»°´Å¥
+    QPushButton *insertBtn = new QPushButton(tr("insert new column"),this);//Ìí¼ÓĞÂÁĞ£¿
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     
     mainLayout->addWidget(tableOpt);
@@ -51,21 +51,21 @@ TableCrt::TableCrt()
     mainLayout->addWidget(applyBtn);
     this->setLayout(mainLayout);
     //connect(insertBtn, static_cast<void(QPushButton::*)(bool)>(&QPushButton::clicked),
-    //	this, static_cast<void(TableCrtAlt::*)(bool)>(&TableCrtAlt::applyCreate));
-    connect(applyBtn,SIGNAL(clicked(bool)),this,SLOT(applyCreate(bool)));
-    connect(insertBtn,SIGNAL(clicked()),this,SLOT(insertCol()));
+    //	this, static_cast<void(TableCrtAlt::*)(bool)>(&TableCrtAlt::ApplyCreate));
+    connect(applyBtn,SIGNAL(clicked(bool)),this,SLOT(ApplyCreate(bool)));
+    connect(insertBtn,SIGNAL(clicked()),this,SLOT(InsertCol()));
 }
-//è®¾ç½®è¡¨æ‰€å±schema
-void TableCrt::setDBName(QString dbname)
+//ÉèÖÃ±íËùÊôschema
+void TableCrt::SetDBName(QString dbname)
 {
     dbName = dbname;
     dbNameLabel->setText(dbName);
 }
-void TableCrt::loadTableInfo(QString tname)
+void TableCrt::LoadTableInfo(QString tname)
 {
 	newTableName->setText(tname);
 	QStringList col_name,col_default,col_isNull,col_type,col_key,col_extra,col_uni;
-	getTableAllCols(tname,col_name,col_default,col_isNull,col_type,col_key,col_extra,col_uni);
+	GetTableAllCols(tname,col_name,col_default,col_isNull,col_type,col_key,col_extra,col_uni);
 	int row = col_name.length();
 	tableOpt->setRowCount(row);
 	for(int i=0;i<row;i++)
@@ -94,15 +94,15 @@ void TableCrt::loadTableInfo(QString tname)
 	}
 	
 }
-//æ–°å¢ä¸€åˆ—
+//ĞÂÔöÒ»ÁĞ
 /*
-	åˆå§‹åŒ–è¡¨æ ¼çš„è¡Œæ•° ä¸ºæœ€åä¸€è¡Œè®¾ç½®åˆå€¼
+	³õÊ¼»¯±í¸ñµÄĞĞÊı Îª×îºóÒ»ĞĞÉèÖÃ³õÖµ
  */
-void TableCrt::insertCol()
+void TableCrt::InsertCol()
 {
     int row;
     row = tableOpt->rowCount();
-    //åˆå§‹åŒ–ä¸‹æ‹‰åˆ—è¡¨
+    //³õÊ¼»¯ÏÂÀ­ÁĞ±í
     QComboBox *datatype = new QComboBox();
     QStringList datalist;
     datalist<<"int"<<"varchar(45)"<<"char(45)"<<"float"<<"double"<<"boolean"<<"tinyint"<<"smallint"<<"bigint"<<"tinyint"<<"datetime";
@@ -117,19 +117,19 @@ void TableCrt::insertCol()
         tableOpt->setItem(row,i,check);
     }
 }
-//æäº¤å»ºè¡¨åŠ¨ä½œ
+//Ìá½»½¨±í¶¯×÷
 /*
- é¦–å…ˆè·å–å½“å‰tablewidgetä¸­è¡Œæ•°ï¼ˆå®é™…æ˜¯è¯¥è¡¨çš„åˆ—ä¸ªæ•°ï¼‰
- ç„¶åå¯¹è¡¨æ ¼è¿›è¡Œéå†
- è·å–æ¯ä¸€ä¸ªå•å…ƒæ ¼å€¼ï¼ˆå³æ¯ä¸€åˆ—çš„æ¯ä¸€ä¸ªå±æ€§ï¼‰
- ç»„è£…ä¸ºå»ºè¡¨è¯­å¥
+ Ê×ÏÈ»ñÈ¡µ±Ç°tablewidgetÖĞĞĞÊı£¨Êµ¼ÊÊÇ¸Ã±íµÄÁĞ¸öÊı£©
+ È»ºó¶Ô±í¸ñ½øĞĞ±éÀú
+ »ñÈ¡Ã¿Ò»¸öµ¥Ôª¸ñÖµ£¨¼´Ã¿Ò»ÁĞµÄÃ¿Ò»¸öÊôĞÔ£©
+ ×é×°Îª½¨±íÓï¾ä
  */
-void TableCrt::applyCreate(bool)
+void TableCrt::ApplyCreate(bool)
 {
 	int colnum=0;
 	QStringList createOpt,pkOpts,uniqOpts;
 	QString pkOption="",tableName="";
-	colnum = tableOpt->rowCount();//è·å–ç”¨æˆ·æ–°å»ºåˆ—æ•°
+	colnum = tableOpt->rowCount();//»ñÈ¡ÓÃ»§ĞÂ½¨ÁĞÊı
 
 	for(int i=0;i<colnum;i++)
 	{
@@ -178,15 +178,15 @@ void TableCrt::applyCreate(bool)
 		{
 			checkOpts<<"DEFAULT "+tableOpt->item(i,9)->text();
 		}
-		//åŠ å…¥åˆ—å
+		//¼ÓÈëÁĞÃû
 		oneOpt = "`"+tableOpt->item(i,0)->text()+"`";
-		//åŠ å…¥çº¦æŸ
+		//¼ÓÈëÔ¼Êø
 		for(int i=0;i<checkOpts.length();i++)
 		{
 			oneOpt = oneOpt+" "+checkOpts[i];
 		}
 		createOpt<<oneOpt;
-		//ä¸»é”®çº¦æŸ
+		//Ö÷¼üÔ¼Êø
 		if(pkOpts.length()!=0){
 			pkOption="PRIMARY KEY (";
 			for(int i=0;i<pkOpts.length();i++)
@@ -204,10 +204,10 @@ void TableCrt::applyCreate(bool)
 		}		
 	}
 	tableName = newTableName->text();
-	string res = createNewTable(dbName,tableName,createOpt,pkOption,uniqOpts);
+	string res = CreateNewTable(dbName,tableName,createOpt,pkOption,uniqOpts);
 	if(res.compare("success")==0)
 	{			
-		emit createTableSuccess(tableName);
+		emit CreateTableSuccess(tableName);
             //listView->edit(index); 
 	}
 	else

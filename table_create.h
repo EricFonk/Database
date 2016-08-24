@@ -20,20 +20,20 @@ class TableCrt : public QWidget
     
 public:
     TableCrt();
-    void initAllTables(QStringList, QString);
+    void InitAllTables(QStringList, QString);
 public:
     QTableWidget *tableOpt;
-    QLineEdit *newTableName;//è¡¨åè¾“å…¥æ¡†
-    QLabel *dbNameLabel;//æ‰€å±æ¨¡å¼æ ‡ç­¾
-    QString dbName;//æ•°æ®åº“å
-    int columns_num;//åˆ—å
-    void setDBName(QString);//è®¾ç½®æ•°æ®åº“
-    void loadTableInfo(QString);
+    QLineEdit *newTableName;//±íÃûÊäÈë¿ò
+    QLabel *dbNameLabel;//ËùÊôÄ£Ê½±êÇ©
+    QString dbName;//Êı¾İ¿âÃû
+    int columns_num;//ÁĞÃû
+    void SetDBName(QString);//ÉèÖÃÊı¾İ¿â
+    void LoadTableInfo(QString);
 signals:
-    void createTableSuccess(QString tableName);
+    void CreateTableSuccess(QString tableName);
     public slots:
-    void applyCreate(bool b=false);//æäº¤å»ºè¡¨åŠ¨ä½œ
-    void insertCol();//æ’å…¥æ–°åˆ—
+    void ApplyCreate(bool b=false);//Ìá½»½¨±í¶¯×÷
+    void InsertCol();//²åÈëĞÂÁĞ
 };
 
 #endif /* table_create_h */

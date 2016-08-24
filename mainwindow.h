@@ -18,6 +18,10 @@
 #include "qProcedureTest.h"
 #include "qViewTest.h"
 
+#include "codeeditor.h"
+#include "myhighlighter.h"
+#include "typedef.h"
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -25,12 +29,76 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    void schemaTreeInit();
-    void manageTreeInit();
+    void SchemaTreeInit();
+    void ManageTreeInit();
     
 private:
-    QMenuBar *menuBar;
-    
+	QMenuBar *menuBarTest;
+	//菜单栏
+	QMenu *fileMenu;
+	QMenu *editMenu;
+	QMenu *viewMenu;
+	QMenu *queryMenu;
+	QMenu *databaseMenu;
+	QMenu *serverMenu;
+	QMenu *toolsMenu;
+	QMenu *scriptingMenu;
+	QMenu *helpMenu;
+	//file菜单动作
+	QAction *newModel;
+	QAction *newQueryTab;
+	QAction *openModel;
+	QAction *saveModel;
+	QAction *closeConnectionTab;
+	QAction *closeTab;
+	QAction *exit;
+	//edit菜单动作
+	QAction *undoSql;
+	QAction *redoSql;
+	QAction *cutSql;
+	QAction *copySql;
+	QAction *pasteSql;
+	QAction *deleteSql;
+	QAction *selectAll;
+	QMenu *find;
+	QAction *findOnly;
+	QAction *findAndReplace;
+	//view菜单动作
+	QAction *home;
+	QMenu *panels;
+	QAction *hideSidebar;
+	QAction *hideSecondarySidebar;
+	QAction *hideOutputArea;
+	QAction *output;
+	QAction *selectNextMainTab;
+	QAction *selectPreviousMainTab;
+	QMenu *lineNumbers;
+	QAction *hideLineNumbers;
+	QAction *showLineNumbers;
+	//query菜单动作
+	QAction *executeAOS;//all or selection
+	QAction *executeAOSText;
+	QAction *executeCS; //current statement
+	QAction *executeCSVTO; //vertical to output
+	QAction *reconnectToServer;
+	QAction *newTabToCurrentServer;
+	//database菜单动作
+	QAction *connectToDatabase;
+	//server菜单动作
+	QAction *serverStatus;
+	QAction *clientConnection;
+	QAction *usersAndPrivileges;
+	QAction *statusAndSystemVariables;
+	QAction *dataExport;
+	QAction *dataImport;
+	QAction *startupShutdown;
+	QAction *serverLogs;
+	//tool菜单动作
+	//scripting菜单动作
+	//help菜单动作
+	QAction *locateLogFiles;
+	QAction *showLogFile;
+    /***********************************************/
     QWidget *centralwidget;
     QGridLayout *gridLayout;
     
@@ -53,11 +121,12 @@ private:
     Panel_UserPrivileges *UserPanel;
     
     //void initConnection();
-    
-    void open();
-    void initTables();
-    void initViews();
-    void initRoutines();
+	void CreateMenu();
+	void CreateAction();
+    void Open();
+    void InitTables();
+    void InitViews();
+    void InitRoutines();
     
     SchemasTest *schemaTable;
     TableWidget *selectTable;
@@ -68,22 +137,32 @@ private:
     QStringList allDB;
     bool hasCrtTable;
     private slots:
-	void addTableToTree(QString newTableName);
-    void createSchema();
-    void showMenu(const QPoint&);
-    void deleteOneSchema();
-    void createOneTable();
-    void createOneView();
-    void createOneFunc();
-    void createOnePro();
-    void selectAllofOneTable();
-    void alterOneTable();
-    void initOneFunction();
-    void initOneProcedure();
-    void initOneView();
+	void AddTableToTree(QString newTableName);
+    void CreateSchema();
+    void ShowMenu(const QPoint&);
+    void DeleteOneSchema();
+    void CreateOneTable();
+    void CreateOneView();
+    void CreateOneFunc();
+    void CreateOnePro();
+    void SelectAllofOneTable();
+    void AlterOneTable();
+    void InitOneFunction();
+    void InitOneProcedure();
+    void InitOneView();
     
-    void initManageInfo(QTreeWidgetItem *temp_root,int temp);
-    void initOneDBInfo(QTreeWidgetItem *temp_root,int temp);
+    void InitManageInfo(QTreeWidgetItem *temp_root,int temp);
+    void InitOneDBInfo(QTreeWidgetItem *temp_root,int temp);
+
+	//菜单接口
+/*protected slots:
+    void New_Model();
+    void New_Query_Tab();
+    void Open_Model();
+    void Save_Model();
+    void Close_Connection_Tab();
+    void Close_Tab();*/
+
 };
 
 #endif // MAINWINDOW_H

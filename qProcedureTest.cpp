@@ -9,7 +9,7 @@
 #include "qProcedureTest.h"
 #include "mysqlQuery.h"
 
-qProcedureTest::qProcedureTest()
+QProcedureTest::QProcedureTest()
 {
     QPushButton *pushButton = new QPushButton(tr("apply new procedure"),this);
     pushButton->setGeometry(QRect(70,40,75,23));
@@ -26,17 +26,17 @@ qProcedureTest::qProcedureTest()
     mainLayout->addWidget(alterButton);
     this->setLayout(mainLayout);
     
-    connect(pushButton,SIGNAL(clicked()),this,SLOT(applyProcedure()));
-    connect(dropButton,SIGNAL(clicked()),this,SLOT(dropProcedure()));
-    connect(alterButton,SIGNAL(clicked()),this,SLOT(alterProcedure()));
+    connect(pushButton,SIGNAL(clicked()),this,SLOT(ApplyProcedure()));
+    connect(dropButton,SIGNAL(clicked()),this,SLOT(DropProcedure()));
+    connect(alterButton,SIGNAL(clicked()),this,SLOT(AlterProcedure()));
 }
 
-void qProcedureTest::applyProcedure()
+void QProcedureTest::ApplyProcedure()
 {
     QString info;
     string res;
     info = textInfo->toPlainText();
-    res=create_procedure(dbName,info);
+    res=CreateProcedure(dbName,info);
     if(res.compare("success")==0)
     {
         QMessageBox::information(this,"SUCCESS!","create procedure success");
@@ -47,10 +47,10 @@ void qProcedureTest::applyProcedure()
     //qDebug("%s",info);
 }
 
-void qProcedureTest::dropProcedure()
+void QProcedureTest::DropTheProcedure()
 {
     string res;
-    res = drop_procedure(dbName,proName);
+    res = DropProcedure(dbName,proName);
     if(res.compare("success")==0)
     {
         QMessageBox::information(this,"SUCCESS!","drop procedure success");
@@ -61,14 +61,14 @@ void qProcedureTest::dropProcedure()
     }
 }
 
-void qProcedureTest::alterProcedure()
+void QProcedureTest::AlterProcedure()
 {
     QString res;
-    res = get_procedure(dbName,proName);
+    res = GetProcedure(dbName,proName);
     textInfo->setPlainText(res);
 }
 
-void qProcedureTest::setAllName(QString db_name,QString pro_name)
+void QProcedureTest::SetAllName(QString db_name, QString pro_name)
 {
     if(db_name!=NULL&&pro_name!=NULL)
     {
@@ -77,7 +77,7 @@ void qProcedureTest::setAllName(QString db_name,QString pro_name)
     }
 }
 
-void qProcedureTest::setText(QString info)
+void QProcedureTest::SetText(QString info)
 {
     textInfo->setPlainText(info);
 }

@@ -10,22 +10,22 @@
 #include <string>
 
 //#pragma comment(lib,"wsock32.lib")
-//#pragma comment(lib,"libmysql.lib")//mysqlæºç åº“
+//#pragma comment(lib,"libmysql.lib")//mysqlÔ´Âë¿â
 
-MYSQL mysql;//mysqlå¯¹è±¡ ç”¨äºè¿›è¡Œmysqlæ¥å£çš„è°ƒç”¨
-MYSQL_FIELD *fd;//mysqlè¿”å›åŸŸ
+MYSQL mysql;//mysql¶ÔÏó ÓÃÓÚ½øĞĞmysql½Ó¿ÚµÄµ÷ÓÃ
+MYSQL_FIELD *fd;//mysql·µ»ØÓò
 char field[32][32];
-MYSQL_RES *res;//mysqlç»“æœé›†
-MYSQL_ROW column;//mysqlè¡Œå¯¹è±¡
+MYSQL_RES *res;//mysql½á¹û¼¯
+MYSQL_ROW column;//mysqlĞĞ¶ÔÏó
 char query[150];
 
 using namespace std;
 
-//è¿æ¥æ•°æ®åº“
+//Á¬½ÓÊı¾İ¿â
 bool ConnectDatabase()
 {
     mysql_init(&mysql);
-    if(!(mysql_real_connect(&mysql,"localhost","root","19960612","workbenchdb",3306,NULL,0)))
+    if(!(mysql_real_connect(&mysql,"localhost","root","123456","",3306,NULL,0)))
     {
         qDebug("error");
         return false;
@@ -37,7 +37,7 @@ bool ConnectDatabase()
     }
 }
 
-char* getOneVariable(std::string variable)
+char* GetOneVariable(std::string variable)
 {
     MYSQL_ROW sql_row;
     std::string query = "show variables like '" + variable + "'";
@@ -55,7 +55,7 @@ char* getOneVariable(std::string variable)
     return strResult;
 }
 
-QStandardItemModel* getConnections(QStandardItemModel *model)
+QStandardItemModel* GetConnections(QStandardItemModel *model)
 {
     std::string query = "show PROCESSLIST";
     std::string strResult;
@@ -98,17 +98,17 @@ QStandardItemModel* getConnections(QStandardItemModel *model)
     return model;
 }
 
-//æ ¹æ®è¡¨åæœç´¢æ•°æ® è¿”å›è¡Œæ•°ã€åˆ—æ•°ã€åˆ—åã€æ¯æ¡è®°å½•å…·ä½“æ•°å€¼ã€ä¸»é”®åã€ä¸»é”®ä½ç½®
-bool selectTest(QString table_name,QStringList &head,QStringList &data,int &row,int &col,QString mainKey,int &mainPos)
+//¸ù¾İ±íÃûËÑË÷Êı¾İ ·µ»ØĞĞÊı¡¢ÁĞÊı¡¢ÁĞÃû¡¢Ã¿Ìõ¼ÇÂ¼¾ßÌåÊıÖµ¡¢Ö÷¼üÃû¡¢Ö÷¼üÎ»ÖÃ
+bool SelectTest(QString table_name,QStringList &head,QStringList &data,int &row,int &col,QString mainKey,int &mainPos)
 {
-	QString myquery="select * from "+table_name+";";
+	QString myQuery="select * from "+table_name+";";
 	char *mytemp;
 	int sumRow=0;
 	int sumCol=0;
 	MYSQL_RES *res;
 	MYSQL_ROW column;
 
-	mysql_query(&mysql,myquery.toStdString().c_str());
+	mysql_query(&mysql,myQuery.toStdString().c_str());
 	res=mysql_store_result(&mysql);
 	sumRow = mysql_affected_rows(&mysql);
 	row = sumRow;
@@ -152,13 +152,13 @@ bool selectTest(QString table_name,QStringList &head,QStringList &data,int &row,
 	return true;
 }
 
-//æ ¹æ®è¡¨åã€æ•°æ®ã€çº¦æŸæ¡ä»¶è¿›è¡Œæ•°æ®æ›´æ–°
-string updateTest(QString table_name,QString data,QString con)
+//¸ù¾İ±íÃû¡¢Êı¾İ¡¢Ô¼ÊøÌõ¼ş½øĞĞÊı¾İ¸üĞÂ
+string UpdateTest(QString table_name,QString data,QString con)
 {
-	QString myquery="update "+table_name+" set ";
-	myquery = myquery + data + " where " + con + ";";
-	//qDebug("%s",myquery);
-	if(mysql_query(&mysql,myquery.toStdString().c_str()))
+	QString myQuery="update "+table_name+" set ";
+	myQuery = myQuery + data + " where " + con + ";";
+	//qDebug("%s",myQuery);
+	if(mysql_query(&mysql,myQuery.toStdString().c_str()))
 	{
 		qDebug("error %s",mysql_error(&mysql));
 		return mysql_error(&mysql);
@@ -169,15 +169,15 @@ string updateTest(QString table_name,QString data,QString con)
 	}
 }
 
-//æ ¹æ®è¡¨åè·å–ä¸»é”®çš„åç§°
-bool getMainKey(QString &mainKey,QString table_name)
+//¸ù¾İ±íÃû»ñÈ¡Ö÷¼üµÄÃû³Æ
+bool GetMainKey(QString &mainKey,QString table_name)
 {
     MYSQL_RES *res;
     MYSQL_ROW column;
-    QString myquery;
-    myquery = "select COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS where table_name='"+table_name+"' AND COLUMN_KEY='PRI';";
-    //è·å–ä¸»é”®å€¼
-    mysql_query(&mysql,myquery.toStdString().c_str());
+    QString myQuery;
+    myQuery = "select COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS where table_name='"+table_name+"' AND COLUMN_KEY='PRI';";
+    //»ñÈ¡Ö÷¼üÖµ
+    mysql_query(&mysql,myQuery.toStdString().c_str());
     res=mysql_store_result(&mysql);
     
     if(res->row_count!=0)
@@ -195,8 +195,8 @@ bool getMainKey(QString &mainKey,QString table_name)
     return true;
 }
 
-//æ ¹æ®sqlè¯­å¥è¿›è¡Œç›´æ¥æ“ä½œ
-string executeWithQuery(int type,QString query)
+//¸ù¾İsqlÓï¾ä½øĞĞÖ±½Ó²Ù×÷
+string ExecuteWithQuery(int type,QString query)
 {
     if(mysql_query(&mysql,query.toStdString().c_str()))
     {
@@ -213,8 +213,8 @@ string executeWithQuery(int type,QString query)
          QString mainKey;
          int row,col,mainPos;
          bool mytest;
-         mytest=getMainKey(mainKey,"new_one");
-         mytest=selectTest("new_one",real_head,real_data,row,col,mainKey,mainPos);
+         mytest=GetMainKey(mainKey,"new_one");
+         mytest=SelectTest("new_one",real_head,real_data,row,col,mainKey,mainPos);
          //RefreshTableData(real_data,row,col);
          }
          */
@@ -222,19 +222,19 @@ string executeWithQuery(int type,QString query)
     }
 }
 
-//å­˜å‚¨è¿‡ç¨‹ç›¸å…³æ“ä½œ
-string find_pros(QString dbName,QStringList &pro_list)
+//´æ´¢¹ı³ÌÏà¹Ø²Ù×÷
+string FindPros(QString dbName,QStringList &pro_list)
 {
-    QString myquery;
+    QString myQuery;
     
-    myquery = "select `name` from mysql.proc where db = '"+dbName+"' and `type` = 'PROCEDURE';";
-    if(mysql_query(&mysql,myquery.toStdString().c_str()))
+    myQuery = "select `name` from mysql.proc where db = '"+dbName+"' and `type` = 'PROCEDURE';";
+    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
     {
         return mysql_error(&mysql);
     }
     else
     {
-        //å¿…é¡»ä½¿ç”¨å±€éƒ¨å˜é‡ï¼ï¼ï¼
+        //±ØĞëÊ¹ÓÃ¾Ö²¿±äÁ¿£¡£¡£¡
         MYSQL_RES *res;
         MYSQL_ROW column;
         res=mysql_store_result(&mysql);
@@ -246,20 +246,20 @@ string find_pros(QString dbName,QStringList &pro_list)
     }
 }
 
-//æ ¹æ®æ•°æ®åº“åã€å­˜å‚¨è¿‡ç¨‹å†…å®¹æ–°å»ºå­˜å‚¨è¿‡ç¨‹
-string create_procedure(QString dbName,QString pro_info)
+//¸ù¾İÊı¾İ¿âÃû¡¢´æ´¢¹ı³ÌÄÚÈİĞÂ½¨´æ´¢¹ı³Ì
+string CreateProcedure(QString dbName,QString pro_info)
 {
-    QString myquery;
+    QString myQuery;
     
-    myquery="use "+dbName+";";
-    if(mysql_query(&mysql,myquery.toStdString().c_str()))
+    myQuery="use "+dbName+";";
+    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
     {
         return mysql_error(&mysql);
     }
     else
     {
-        myquery=pro_info+";";
-        if(mysql_query(&mysql,myquery.toStdString().c_str()))
+        myQuery=pro_info+";";
+        if(mysql_query(&mysql,myQuery.toStdString().c_str()))
         {
             return mysql_error(&mysql);
         }
@@ -270,12 +270,12 @@ string create_procedure(QString dbName,QString pro_info)
     }
 }
 
-//æ ¹æ®æ•°æ®åº“åã€å­˜å‚¨è¿‡ç¨‹ååˆ é™¤å­˜å‚¨è¿‡ç¨‹
-string drop_procedure(QString dbName,QString pro_name)
+//¸ù¾İÊı¾İ¿âÃû¡¢´æ´¢¹ı³ÌÃûÉ¾³ı´æ´¢¹ı³Ì
+string DropProcedure(QString dbName,QString pro_name)
 {
-    QString myquery;
-    myquery = "drop procedure `"+dbName+"`.`"+pro_name+"`;";
-    if(mysql_query(&mysql,myquery.toStdString().c_str()))
+    QString myQuery;
+    myQuery = "drop procedure `"+dbName+"`.`"+pro_name+"`;";
+    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
     {
         return mysql_error(&mysql);
     }
@@ -285,18 +285,18 @@ string drop_procedure(QString dbName,QString pro_name)
     }
 }
 
-//æ ¹æ®æ•°æ®åº“åã€å­˜å‚¨è¿‡ç¨‹åè·å–å­˜å‚¨è¿‡ç¨‹å†…å®¹
-QString get_procedure(QString dbName,QString pro_name)
+//¸ù¾İÊı¾İ¿âÃû¡¢´æ´¢¹ı³ÌÃû»ñÈ¡´æ´¢¹ı³ÌÄÚÈİ
+QString GetProcedure(QString dbName,QString pro_name)
 {
-    QString myquery;
-    myquery = "show create procedure "+dbName+"."+pro_name;
-    if(mysql_query(&mysql,myquery.toStdString().c_str()))
+    QString myQuery;
+    myQuery = "show create procedure "+dbName+"."+pro_name;
+    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
     {
         return mysql_error(&mysql);
     }
     else
     {
-        //å¿…é¡»ä½¿ç”¨å±€éƒ¨å˜é‡ï¼ï¼ï¼
+        //±ØĞëÊ¹ÓÃ¾Ö²¿±äÁ¿£¡£¡£¡
         MYSQL_RES *res;
         MYSQL_ROW column;
         res=mysql_store_result(&mysql);
@@ -305,19 +305,19 @@ QString get_procedure(QString dbName,QString pro_name)
     }
 }
 
-//å‡½æ•°ç›¸å…³æ“ä½œ
-string find_funcs(QString dbName,QStringList &func_list)
+//º¯ÊıÏà¹Ø²Ù×÷
+string FindFuncs(QString dbName,QStringList &func_list)
 {
-    QString myquery;
+    QString myQuery;
     
-    myquery = "select `name` from mysql.proc where db = '"+dbName+"' and `type` = 'FUNCTION';";
-    if(mysql_query(&mysql,myquery.toStdString().c_str()))
+    myQuery = "select `name` from mysql.proc where db = '"+dbName+"' and `type` = 'FUNCTION';";
+    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
     {
         return mysql_error(&mysql);
     }
     else
     {
-        //å¿…é¡»ä½¿ç”¨å±€éƒ¨å˜é‡ï¼ï¼ï¼
+        //±ØĞëÊ¹ÓÃ¾Ö²¿±äÁ¿£¡£¡£¡
         MYSQL_RES *res;
         MYSQL_ROW column;
         res=mysql_store_result(&mysql);
@@ -329,20 +329,20 @@ string find_funcs(QString dbName,QStringList &func_list)
     }
 }
 
-//æ ¹æ®æ•°æ®åº“åã€å‡½æ•°å†…å®¹æ–°å»ºå‡½æ•°
-string create_function(QString dbName,QString func_info)
+//¸ù¾İÊı¾İ¿âÃû¡¢º¯ÊıÄÚÈİĞÂ½¨º¯Êı
+string CreateFunction(QString dbName,QString func_info)
 {
-    QString myquery;
+    QString myQuery;
     
-    myquery="use "+dbName+";";
-    if(mysql_query(&mysql,myquery.toStdString().c_str()))
+    myQuery="use "+dbName+";";
+    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
     {
         return mysql_error(&mysql);
     }
     else
     {
-        myquery=func_info+";";
-        if(mysql_query(&mysql,myquery.toStdString().c_str()))
+        myQuery=func_info+";";
+        if(mysql_query(&mysql,myQuery.toStdString().c_str()))
         {
             return mysql_error(&mysql);
         }
@@ -353,11 +353,11 @@ string create_function(QString dbName,QString func_info)
     }
 }
 
-string drop_function(QString dbName,QString func_name)
+string DropFunction(QString dbName,QString func_name)
 {
-    QString myquery;
-    myquery = "drop function `"+dbName+"`.`"+func_name+"`;";
-    if(mysql_query(&mysql,myquery.toStdString().c_str()))
+    QString myQuery;
+    myQuery = "drop function `"+dbName+"`.`"+func_name+"`;";
+    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
     {
         return mysql_error(&mysql);
     }
@@ -367,17 +367,17 @@ string drop_function(QString dbName,QString func_name)
     }
 }
 
-QString get_function(QString dbName,QString func_name)
+QString GetFunction(QString dbName,QString func_name)
 {
-    QString myquery;
-    myquery = "show create function "+dbName+"."+func_name;
-    if(mysql_query(&mysql,myquery.toStdString().c_str()))
+    QString myQuery;
+    myQuery = "show create function "+dbName+"."+func_name;
+    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
     {
         return mysql_error(&mysql);
     }
     else
     {
-        //å¿…é¡»ä½¿ç”¨å±€éƒ¨å˜é‡ï¼ï¼ï¼
+        //±ØĞëÊ¹ÓÃ¾Ö²¿±äÁ¿£¡£¡£¡
         MYSQL_RES *res;
         MYSQL_ROW column;
         res=mysql_store_result(&mysql);
@@ -386,19 +386,19 @@ QString get_function(QString dbName,QString func_name)
     }
 }
 
-//è§†å›¾ç›¸å…³æ“ä½œ
-//æ ¹æ®databaseåå­—æŸ¥æ‰¾è§†å›¾
-string find_views(QString dbName,QStringList &view_list)
+//ÊÓÍ¼Ïà¹Ø²Ù×÷
+//¸ù¾İdatabaseÃû×Ö²éÕÒÊÓÍ¼
+string FindViews(QString dbName,QStringList &view_list)
 {
-    QString myquery;
-    myquery = "SELECT TABLE_NAME from information_schema.VIEWS where TABLE_SCHEMA='"+dbName+"';";
-    if(mysql_query(&mysql,myquery.toStdString().c_str()))
+    QString myQuery;
+    myQuery = "SELECT TABLE_NAME from information_schema.VIEWS where TABLE_SCHEMA='"+dbName+"';";
+    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
     {
         return mysql_error(&mysql);
     }
     else
     {
-        //å¿…é¡»ä½¿ç”¨å±€éƒ¨å˜é‡ï¼ï¼ï¼
+        //±ØĞëÊ¹ÓÃ¾Ö²¿±äÁ¿£¡£¡£¡
         MYSQL_RES *res;
         MYSQL_ROW column;
         res=mysql_store_result(&mysql);
@@ -409,19 +409,19 @@ string find_views(QString dbName,QStringList &view_list)
         return "success";
     }
 }
-string create_view(QString dbName,QString view_info)
+string CreateView(QString dbName,QString view_info)
 {
-    QString myquery;
+    QString myQuery;
     
-    myquery="use "+dbName+";";
-    if(mysql_query(&mysql,myquery.toStdString().c_str()))
+    myQuery="use "+dbName+";";
+    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
     {
         return mysql_error(&mysql);
     }
     else
     {
-        myquery=view_info+";";
-        if(mysql_query(&mysql,myquery.toStdString().c_str()))
+        myQuery=view_info+";";
+        if(mysql_query(&mysql,myQuery.toStdString().c_str()))
         {
             return mysql_error(&mysql);
         }
@@ -432,11 +432,11 @@ string create_view(QString dbName,QString view_info)
     }
 }
 
-string drop_view(QString dbName,QString view_name)
+string DropView(QString dbName,QString view_name)
 {
-    QString myquery;
-    myquery = "drop view `"+dbName+"`.`"+view_name+"`;";
-    if(mysql_query(&mysql,myquery.toStdString().c_str()))
+    QString myQuery;
+    myQuery = "drop view `"+dbName+"`.`"+view_name+"`;";
+    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
     {
         return mysql_error(&mysql);
     }
@@ -446,23 +446,23 @@ string drop_view(QString dbName,QString view_name)
     }
 }
 
-QString get_view(QString dbName,QString view_name)
+QString GetView(QString dbName,QString view_name)
 {
-    QString myquery;
-    myquery = "show create view "+dbName+"."+view_name;
-    if(mysql_query(&mysql,myquery.toStdString().c_str()))
+    QString myQuery;
+    myQuery = "show create view "+dbName+"."+view_name;
+    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
     {
         return mysql_error(&mysql);
     }
     else
     {
-        //å¿…é¡»ä½¿ç”¨å±€éƒ¨å˜é‡ï¼ï¼ï¼
+        //±ØĞëÊ¹ÓÃ¾Ö²¿±äÁ¿£¡£¡£¡
         MYSQL_RES *res;
         MYSQL_ROW column;
         res=mysql_store_result(&mysql);
         column=mysql_fetch_row(res);
         QString xx = column[1];
-        //è°ƒæ•´è¾“å‡ºè§†å›¾æ ¼å¼
+        //µ÷ÕûÊä³öÊÓÍ¼¸ñÊ½
         /*
          string xxx = xx.toStdString();
          int a1 = xxx.find_first_of("ALGORITHM");
@@ -483,7 +483,7 @@ QString get_view(QString dbName,QString view_name)
 
 //DML
 //database handler
-string test(QString newDB)
+string Test(QString newDB)
 {
     if(mysql_query(&mysql,"select * from test_one;"))
     {
@@ -491,14 +491,14 @@ string test(QString newDB)
     }
 }
 
-//è·å–å…¨éƒ¨schemaåç§°
-bool getAllDatabases(QStringList &list)
+//»ñÈ¡È«²¿schemaÃû³Æ
+bool GetAllDatabases(QStringList &list)
 {
-    //å¿…é¡»ä½¿ç”¨å±€éƒ¨å˜é‡ï¼ï¼ï¼
+    //±ØĞëÊ¹ÓÃ¾Ö²¿±äÁ¿£¡£¡£¡
     MYSQL_RES *res;
     MYSQL_ROW column;
-    string myquery = "Select SCHEMA_NAME From information_schema.SCHEMATA;";
-    if(mysql_query(&mysql,myquery.c_str()))
+    string myQuery = "Select SCHEMA_NAME From information_schema.SCHEMATA;";
+    if(mysql_query(&mysql,myQuery.c_str()))
     {
         qDebug("error %s",mysql_error(&mysql));
         return false;
@@ -514,11 +514,11 @@ bool getAllDatabases(QStringList &list)
     }
 }
 
-//æ ¹æ®æ•°æ®åº“åæ–°å»ºæ•°æ®åº“
-string createDBTest(QString newDB)
+//¸ù¾İÊı¾İ¿âÃûĞÂ½¨Êı¾İ¿â
+string CreateDBTest(QString newDB)
 {
-    string myquery = "create database "+newDB.toStdString()+";";
-    if(mysql_query(&mysql,myquery.c_str()))
+    string myQuery = "create database "+newDB.toStdString()+";";
+    if(mysql_query(&mysql,myQuery.c_str()))
     {
         qDebug("error %s",mysql_error(&mysql));
         return mysql_error(&mysql);
@@ -529,11 +529,11 @@ string createDBTest(QString newDB)
     }
 }
 
-//æ ¹æ®æ•°æ®åº“ååˆ é™¤æ•°æ®åº“
-string dropDBTest(QString oldDB)
+//¸ù¾İÊı¾İ¿âÃûÉ¾³ıÊı¾İ¿â
+string DropDBTest(QString oldDB)
 {
-    string myquery = "drop database "+oldDB.toStdString()+";";
-    if(mysql_query(&mysql,myquery.c_str()))
+    string myQuery = "drop database "+oldDB.toStdString()+";";
+    if(mysql_query(&mysql,myQuery.c_str()))
     {
         qDebug("error %s",mysql_error(&mysql));
         return mysql_error(&mysql);
@@ -544,14 +544,14 @@ string dropDBTest(QString oldDB)
     }
 }
 
-//æ ¹æ®æ•°æ®åº“åæŸ¥æ‰¾æ‰€æœ‰å±äºè¯¥schemaçš„è¡¨å
-string getAllTables(QStringList &list,QString currentDB)
+//¸ù¾İÊı¾İ¿âÃû²éÕÒËùÓĞÊôÓÚ¸ÃschemaµÄ±íÃû
+string GetAllTables(QStringList &list,QString currentDB)
 {
-    //å¿…é¡»ä½¿ç”¨å±€éƒ¨å˜é‡ï¼ï¼ï¼
+    //±ØĞëÊ¹ÓÃ¾Ö²¿±äÁ¿£¡£¡£¡
     MYSQL_RES *res;
     MYSQL_ROW column;
-    string myquery = "select table_name from information_schema.tables where table_schema='"+currentDB.toStdString()+"';";
-    if(mysql_query(&mysql,myquery.c_str()))
+    string myQuery = "select table_name from information_schema.tables where table_schema='"+currentDB.toStdString()+"';";
+    if(mysql_query(&mysql,myQuery.c_str()))
     {
         qDebug("error %s",mysql_error(&mysql));
         return mysql_error(&mysql);
@@ -567,48 +567,48 @@ string getAllTables(QStringList &list,QString currentDB)
     }
 }
 
-//æ ¹æ®æ•°æ®åº“åã€è¡¨åã€åˆ—è¯­å¥ã€ä¸»é”®è¯­å¥ã€å”¯ä¸€çº¦æŸè¯­å¥æ–°å»ºè¡¨
-string createNewTable(QString dbName,QString tableName,QStringList createOpt,QString pkOption,QStringList uniqOpts)
+//¸ù¾İÊı¾İ¿âÃû¡¢±íÃû¡¢ÁĞÓï¾ä¡¢Ö÷¼üÓï¾ä¡¢Î¨Ò»Ô¼ÊøÓï¾äĞÂ½¨±í
+string CreateNewTable(QString dbName,QString tableName,QStringList createOpt,QString pkOption,QStringList uniqOpts)
 {
-    QString myquery;
-    myquery = "create table ";
+    QString myQuery;
+    myQuery = "create table ";
     if(dbName!=NULL)
     {
-        myquery = myquery+"`"+dbName+"`.";
+        myQuery = myQuery+"`"+dbName+"`.";
     }
     if(tableName!=NULL)
     {
-        myquery = myquery+"`"+tableName+"`"+"(";
+        myQuery = myQuery+"`"+tableName+"`"+"(";
     }
     for(int i=0;i<createOpt.length();i++)
     {
-        myquery=myquery+createOpt[i];
+        myQuery=myQuery+createOpt[i];
         if(i!=(createOpt.length()-1))
         {
-            myquery = myquery + ",";
+            myQuery = myQuery + ",";
         }
     }
-    //è®¾ç½®ä¸»é”®çº¦æŸ
+    //ÉèÖÃÖ÷¼üÔ¼Êø
     if(pkOption!=NULL)
     {
-        myquery = myquery +","+pkOption;
+        myQuery = myQuery +","+pkOption;
     }
-    //è®¾ç½®å”¯ä¸€çº¦æŸ
+    //ÉèÖÃÎ¨Ò»Ô¼Êø
     if(uniqOpts.length()!=0)
     {
-        myquery = myquery +",";
+        myQuery = myQuery +",";
         for(int i=0;i<uniqOpts.length();i++)
         {
-            myquery=myquery+uniqOpts[i];
+            myQuery=myQuery+uniqOpts[i];
             if(i!=(uniqOpts.length()-1))
             {
-                myquery = myquery + ",";
+                myQuery = myQuery + ",";
             }
         }
     }
     
-    myquery = myquery + ");";
-    if(mysql_query(&mysql,myquery.toStdString().c_str()))
+    myQuery = myQuery + ");";
+    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
     {
         qDebug("error %s",mysql_error(&mysql));
         return mysql_error(&mysql);
@@ -619,7 +619,7 @@ string createNewTable(QString dbName,QString tableName,QStringList createOpt,QSt
     }
 }
 
-string dropTableWithQuery(QString query)
+string DropTableWithQuery(QString query)
 {
     if(mysql_query(&mysql,query.toStdString().c_str()))
     {
@@ -632,19 +632,19 @@ string dropTableWithQuery(QString query)
     }
 }
 
-//æ ¹æ®è¡¨åè·å–å…¶æ‰€æœ‰åˆ—ä¿¡æ¯
-void getTableAllCols(QString tableName,QStringList &col_name,QStringList &col_default,QStringList &col_isNull,
+//¸ù¾İ±íÃû»ñÈ¡ÆäËùÓĞÁĞĞÅÏ¢
+void GetTableAllCols(QString tableName,QStringList &col_name,QStringList &col_default,QStringList &col_isNull,
 					QStringList &col_type,QStringList &col_key,QStringList &col_extra,QStringList &col_uni)
 {
-    QString myquery;
-    myquery = "SELECT * FROM information_schema.COLUMNS where table_name='"+tableName+"';";
-    if(mysql_query(&mysql,myquery.toStdString().c_str()))
+    QString myQuery;
+    myQuery = "SELECT * FROM information_schema.COLUMNS where table_name='"+tableName+"';";
+    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
     {
         qDebug("error %s",mysql_error(&mysql));
     }
     else
     {
-        //å¿…é¡»ä½¿ç”¨å±€éƒ¨å˜é‡ï¼ï¼ï¼
+        //±ØĞëÊ¹ÓÃ¾Ö²¿±äÁ¿£¡£¡£¡
         MYSQL_RES *res;
         res=mysql_store_result(&mysql);
         while(column=mysql_fetch_row(res))
@@ -661,24 +661,24 @@ void getTableAllCols(QString tableName,QStringList &col_name,QStringList &col_de
 
 void getOneTableUniqueChecks(QString dbName, QString tName,QStringList &unique)
 {
-	QString myquery;
-	myquery = "SELECT ";
+	QString myQuery;
+	myQuery = "SELECT ";
 }
 
-QString AlterTable_AddColumns(QString dbName,QString tName,QStringList allColNames,QStringList allColTypes,QStringList allColOpts,QStringList allPkOpts,QStringList allIndexOpts)
+QString AlterTableAddColumns(QString dbName,QString tName,QStringList allColNames,QStringList allColTypes,QStringList allColOpts,QStringList allPkOpts,QStringList allIndexOpts)
 {
-    QString myquery;
+    QString myQuery;
     QString flag;
     QString pkQuery;
     QString indexQuery;
-    myquery = "ALTER TABLE "+dbName+"."+tName;
+    myQuery = "ALTER TABLE "+dbName+"."+tName;
     
     for(int i=0;i<allColNames.length();i++)
     {
-        myquery += " ADD "+allColNames[i]+" "+allColTypes[i]+" "+allColOpts[i];
+        myQuery += " ADD "+allColNames[i]+" "+allColTypes[i]+" "+allColOpts[i];
         if(i!=allColNames.length()-1)
         {
-            myquery+=",";
+            myQuery+=",";
         }
     }
     if(allPkOpts.length()!=0)
@@ -696,7 +696,7 @@ QString AlterTable_AddColumns(QString dbName,QString tName,QStringList allColNam
                 pkQuery+=")";
             }
         }
-        myquery += ","+pkQuery;
+        myQuery += ","+pkQuery;
     }
     if(allIndexOpts.length()!=0)
     {
@@ -708,19 +708,19 @@ QString AlterTable_AddColumns(QString dbName,QString tName,QStringList allColNam
                 indexQuery+=",";
             }
         }
-        myquery += ","+indexQuery;
+        myQuery += ","+indexQuery;
     }
-    myquery +=";";
-    flag = QString::fromStdString(executeWithQuery(0,myquery));
+    myQuery +=";";
+    flag = QString::fromStdString(ExecuteWithQuery(0,myQuery));
     return flag;
 }
 
-QString AlterTable_DropColumn(QString dbName, QString tName,QString drop_colName)
+QString AlterTableDropColumn(QString dbName, QString tName,QString drop_colName)
 {
-	QString myquery;
+	QString myQuery;
 	QString flag;
-	myquery = "ALTER TABLE "+dbName+"."+tName+" DROP "+drop_colName+";";
-	if(mysql_query(&mysql,myquery.toStdString().c_str()))
+	myQuery = "ALTER TABLE "+dbName+"."+tName+" DROP "+drop_colName+";";
+	if(mysql_query(&mysql,myQuery.toStdString().c_str()))
 	{
 		qDebug("error %s",mysql_error(&mysql));
 		flag = mysql_error(&mysql);
@@ -732,13 +732,13 @@ QString AlterTable_DropColumn(QString dbName, QString tName,QString drop_colName
 	return flag;
 }
 
-//æ›´æ”¹è¡¨å æ£€æŸ¥sqlè¯­æ³•æ˜¯å¦æ­£ç¡®
-QString AlterTable_RenameTable(QString tName,QString newTName)
+//¸ü¸Ä±íÃû ¼ì²ésqlÓï·¨ÊÇ·ñÕıÈ·
+QString AlterTableRenameTable(QString tName,QString newTName)
 {
-    QString myquery;
+    QString myQuery;
     QString flag;
-    myquery = "ALTER TABLE "+tName+" RENAME "+newTName+";";
-    if(mysql_query(&mysql,myquery.toStdString().c_str()))
+    myQuery = "ALTER TABLE "+tName+" RENAME "+newTName+";";
+    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
     {
         qDebug("error %s",mysql_error(&mysql));
         flag = mysql_error(&mysql);
@@ -750,12 +750,12 @@ QString AlterTable_RenameTable(QString tName,QString newTName)
     return flag;
 }
 
-//è¿™æ˜¯æˆ‘å†™çš„
-//é¦–å…ˆæ˜¯è¿æ¥æ•°æ®åº“ï¼Œå·²ç»å†™äº†
+//ÕâÊÇÎÒĞ´µÄ
+//Ê×ÏÈÊÇÁ¬½ÓÊı¾İ¿â£¬ÒÑ¾­Ğ´ÁË
 
 
-//æŸ¥è¯¢ç”¨æˆ·è¡¨ä¸­çš„userå’Œhost,è¿”å›ç»“æœé›†
-QString Query_User_Host(QStringList &pIOUserHost, int *pIONumberOfColumns, int *pIONumberOfRows)
+//²éÑ¯ÓÃ»§±íÖĞµÄuserºÍhost,·µ»Ø½á¹û¼¯
+QString QueryUserHost(QStringList &pIOUserHost, int *pIONumberOfColumns, int *pIONumberOfRows)
 {
 	QString querySql;
 	QString queryStatus;
@@ -772,10 +772,10 @@ QString Query_User_Host(QStringList &pIOUserHost, int *pIONumberOfColumns, int *
 		queryResult = mysql_store_result(&mysql);
 		if (queryResult)
 		{
-			*pIONumberOfColumns = mysql_num_fields(queryResult); //è·å–åˆ—çš„æ•°ç›®
-			*pIONumberOfRows = mysql_affected_rows(&mysql); //è·å–è¡Œçš„æ•°ç›®
+			*pIONumberOfColumns = mysql_num_fields(queryResult); //»ñÈ¡ÁĞµÄÊıÄ¿
+			*pIONumberOfRows = mysql_affected_rows(&mysql); //»ñÈ¡ĞĞµÄÊıÄ¿
 
-			for (int m = 0; m < *pIONumberOfRows; m++) //å‡ è¡Œå‡ åˆ—,
+			for (int m = 0; m < *pIONumberOfRows; m++) //¼¸ĞĞ¼¸ÁĞ,
 			{
 				fetchRow = mysql_fetch_row(queryResult);
 				if (fetchRow != NULL)
@@ -791,8 +791,8 @@ QString Query_User_Host(QStringList &pIOUserHost, int *pIONumberOfColumns, int *
 	}
 	return queryStatus;
 }
-//æŸ¥è¯¢å½“å‰ç”¨æˆ·çš„å¯†ç 
-QString Query_Authentication(QStringList &pIOPassword,QString pIUserName)
+//²éÑ¯µ±Ç°ÓÃ»§µÄÃÜÂë
+QString QueryAuthentication(QStringList &pIOPassword,QString pIUserName)
 {
 	QString querySql;
 	QString queryStatus;
@@ -814,8 +814,8 @@ QString Query_Authentication(QStringList &pIOPassword,QString pIUserName)
 	}
 	return queryStatus;
 }
-//åˆ›å»ºæ–°ç”¨æˆ·
-QString Create_User(QString pIUserName, QString pIHost, QString pIPassword)
+//´´½¨ĞÂÓÃ»§
+QString CreateUser(QString pIUserName, QString pIHost, QString pIPassword)
 {
 	QString createSql;
 	QString createStatus;
@@ -832,8 +832,8 @@ QString Create_User(QString pIUserName, QString pIHost, QString pIPassword)
 	return createStatus;
 }
 
-//åˆ é™¤ç”¨æˆ·
-QString Delete_User(QString pIUserName)
+//É¾³ıÓÃ»§
+QString DeleteUser(QString pIUserName)
 {
 	QString deleteSql;
 	QString deleteStatus;
@@ -850,8 +850,8 @@ QString Delete_User(QString pIUserName)
 	return deleteStatus;
 }
 
-//æŸ¥è¯¢æƒé™ï¼Œå°†æƒé™å€¼èµ‹ç»™å¯¹åº”çš„å˜é‡
-QString Query_Privileges_Variables(QString pIUserName, QString pIHost)
+//²éÑ¯È¨ÏŞ£¬½«È¨ÏŞÖµ¸³¸ø¶ÔÓ¦µÄ±äÁ¿
+QString QueryPrivilegesVariables(QString pIUserName, QString pIHost)
 {
 	QString querySql;
 	QString queryStatus;
@@ -867,8 +867,8 @@ QString Query_Privileges_Variables(QString pIUserName, QString pIHost)
 	}
 	return queryStatus;
 }
-//æŸ¥è¯¢æƒé™å˜é‡
-QString Query_Variables(QStringList &pIOUserPriv)
+//²éÑ¯È¨ÏŞ±äÁ¿
+QString QueryVariables(QStringList &pIOUserPriv)
 {
 	QString querySql;
 	QString queryStatus;
@@ -895,8 +895,8 @@ QString Query_Variables(QStringList &pIOUserPriv)
 	}
 	return queryStatus;
 }
-//æ’¤é”€ç”¨æˆ·æƒé™
-QString Revoke_Privileges(QString pIUserName, QString pIHost)
+//³·ÏúÓÃ»§È¨ÏŞ
+QString RevokePrivileges(QString pIUserName, QString pIHost)
 {
 	QString revokeSql;
 	QString revokeStatus;
@@ -912,9 +912,9 @@ QString Revoke_Privileges(QString pIUserName, QString pIHost)
 	}
 	return revokeStatus;
 }
-//ç”¨æˆ·æˆæƒ
-//äºŒåä¹ä¸ªæƒé™æˆæƒï¼Œè¿‡äºå¤æ‚ï¼Œå¹¶ä¸”ä»£ç é‡å¤è¿‡å¤š
-QString Authority_Management(int pIJudgement,QString pIUserName,QString pIHost)
+//ÓÃ»§ÊÚÈ¨
+//¶şÊ®¾Å¸öÈ¨ÏŞÊÚÈ¨£¬¹ıÓÚ¸´ÔÓ£¬²¢ÇÒ´úÂëÖØ¸´¹ı¶à
+QString AuthorityManagement(int pIJudgement,QString pIUserName,QString pIHost)
 {
 	int res;
 	QString grantSql;
@@ -994,8 +994,8 @@ QString Authority_Management(int pIJudgement,QString pIUserName,QString pIHost)
 
 }
 
-//æŸ¥è¯¢å½“å‰ç”¨æˆ·èµ„æº
-QString Query_UserResource(QStringList &pIOUserResource,QString pIUserName, QString pIHost)
+//²éÑ¯µ±Ç°ÓÃ»§×ÊÔ´
+QString QueryUserResource(QStringList &pIOUserResource,QString pIUserName, QString pIHost)
 {
 	MYSQL_RES *queryResult;
 	QString querySql;
@@ -1020,8 +1020,8 @@ QString Query_UserResource(QStringList &pIOUserResource,QString pIUserName, QStr
 	return queryStatus;
 }
 
-//è®¾ç½®ç”¨æˆ·èµ„æº
-QString Set_UserResource(QString pIUserName, QString pIHost, QString pIQuestions, QString pIUpdates, QString pIConnections, QString pIUserConnections)
+//ÉèÖÃÓÃ»§×ÊÔ´
+QString SetUserResource(QString pIUserName, QString pIHost, QString pIQuestions, QString pIUpdates, QString pIConnections, QString pIUserConnections)
 {
 	QString setSql;
 	QString setStatus;
@@ -1038,8 +1038,8 @@ QString Set_UserResource(QString pIUserName, QString pIHost, QString pIQuestions
 	return setStatus;
 }
 
-//æŸ¥è¯¢å½“å‰ç”¨æˆ·èµ‹äºˆäº†æƒé™çš„pISchema
-QString Query_Schema(QStringList &pIOSchema, QString pIUserName, QString pIHost,int *pIONumberOfRows)
+//²éÑ¯µ±Ç°ÓÃ»§¸³ÓèÁËÈ¨ÏŞµÄpISchema
+QString QuerySchema(QStringList &pIOSchema, QString pIUserName, QString pIHost,int *pIONumberOfRows)
 {
 	QString querySql;
 	QString queryStatus;
@@ -1056,9 +1056,9 @@ QString Query_Schema(QStringList &pIOSchema, QString pIUserName, QString pIHost,
 		queryResult = mysql_store_result(&mysql);
 		if (queryResult)
 		{
-			*pIONumberOfRows = mysql_affected_rows(&mysql); //è·å–è¡Œçš„æ•°ç›®
+			*pIONumberOfRows = mysql_affected_rows(&mysql); //»ñÈ¡ĞĞµÄÊıÄ¿
 
-			for (int j = 0; j < *pIONumberOfRows; j++) //è¡Œå¾ªç¯
+			for (int j = 0; j < *pIONumberOfRows; j++) //ĞĞÑ­»·
 			{
 				fetchRow = mysql_fetch_row(queryResult);
 				if (fetchRow != NULL)
@@ -1072,8 +1072,8 @@ QString Query_Schema(QStringList &pIOSchema, QString pIUserName, QString pIHost,
 	return queryStatus;
 }
 
-//è®¾ç½®å½“å‰ç”¨æˆ·æ•°æ®åº“Schemaæƒé™
-QString Set_Schema_Privileges(int pIJudgement, QString pISchema, QString pIUserName, QString pIHost)
+//ÉèÖÃµ±Ç°ÓÃ»§Êı¾İ¿âSchemaÈ¨ÏŞ
+QString SetSchemaPrivileges(int pIJudgement, QString pISchema, QString pIUserName, QString pIHost)
 {
 	int res;
 	QString grantSql;
@@ -1131,7 +1131,7 @@ QString Set_Schema_Privileges(int pIJudgement, QString pISchema, QString pIUserN
 	}
 	return grantStatus;
 }
-QString Query_Shema_Variables(QString pIUserName, QString pIHost, QString pISchema)
+QString QueryShemaVariables(QString pIUserName, QString pIHost, QString pISchema)
 {
 	QString querySql;
 	QString queryStatus;
@@ -1147,7 +1147,7 @@ QString Query_Shema_Variables(QString pIUserName, QString pIHost, QString pISche
 	}
 	return queryStatus;
 }
-QString Show_Schema_Privileges(QStringList &pIOSchemaPriv)
+QString ShowSchemaPrivileges(QStringList &pIOSchemaPriv)
 {
 	QString querySql;
 	QString queryStatus;
@@ -1174,7 +1174,7 @@ QString Show_Schema_Privileges(QStringList &pIOSchemaPriv)
 	}
 	return queryStatus;
 }
-QString Revoke_Schema_Privileges(QString pIUserName, QString pIHost)
+QString RevokeSchemaPrivileges(QString pIUserName, QString pIHost)
 {
 	QString revokeStatus;
 	QString revokeSql;
@@ -1190,7 +1190,7 @@ QString Revoke_Schema_Privileges(QString pIUserName, QString pIHost)
 	}
 	return revokeStatus;
 }
-QString Delete_Entry(QString pIUserName, QString pIHost, QString pISchema)
+QString DeleteEntry(QString pIUserName, QString pIHost, QString pISchema)
 {
 	QString deleteStatus;
 	QString deleteSql;

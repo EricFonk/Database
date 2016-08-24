@@ -13,21 +13,21 @@
 #include <QtGui>
 #include <QString>
 
-class qProcedureTest : public QWidget
+class QProcedureTest : public QWidget
 {
     Q_OBJECT
 public:
-    qProcedureTest();
-    void setAllName(QString db_name,QString pro_name);
-    void setText(QString info);
+    QProcedureTest();
+    void SetAllName(QString db_name,QString pro_name);
+    void SetText(QString info);
 private:
     QPushButton *pushButton;
     QTextEdit *textInfo;
     QString info,proName,dbName;
     private slots:
-    void applyProcedure();
-    void dropProcedure();
-    void alterProcedure();
+    void ApplyProcedure();
+    void DropTheProcedure();
+    void AlterProcedure();
 };
 
 #endif /* qProcedureTest_h */

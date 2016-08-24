@@ -57,22 +57,22 @@ TableAlt::TableAlt()
 	mainLayout->addWidget(refreshBtn);
 	this->setLayout(mainLayout); 	
 	//connect(insertBtn, static_cast<void(QPushButton::*)(bool)>(&QPushButton::clicked), 
-	//	this, static_cast<void(TableCrtAlt::*)(bool)>(&TableCrtAlt::applyCreate));
-	connect(applyBtn,SIGNAL(clicked(bool)),this,SLOT(applyAlter(bool)));
-	connect(dropColumnBtn,SIGNAL(clicked()),this,SLOT(dropCol()));
-	connect(addColumnBtn,SIGNAL(clicked()),this,SLOT(insertCol()));
-	connect(cfmAddColBtn,SIGNAL(clicked()),this,SLOT(confirmInsertCol()));
-	connect(refreshBtn,SIGNAL(clicked()),this,SLOT(refreshAllInfo()));
-	//connect(tableOpt->model(),SIGNAL(modelDataChanged(const QModelIndex &topLeft, QModelIndex &buttomRight)),this,SLOT(onDataChange(const QModelIndex &topLeft, QModelIndex &buttomRight)));
+	//	this, static_cast<void(TableCrtAlt::*)(bool)>(&TableCrtAlt::ApplyCreate));
+	connect(applyBtn,SIGNAL(clicked(bool)),this,SLOT(ApplyAlter(bool)));
+	connect(dropColumnBtn,SIGNAL(clicked()),this,SLOT(DropCol()));
+	connect(addColumnBtn,SIGNAL(clicked()),this,SLOT(InsertCol()));
+	connect(cfmAddColBtn,SIGNAL(clicked()),this,SLOT(ConfirmInsertCol()));
+	connect(refreshBtn,SIGNAL(clicked()),this,SLOT(RefreshAllInfo()));
+	//connect(tableOpt->model(),SIGNAL(modelDataChanged(const QModelIndex &topLeft, QModelIndex &buttomRight)),this,SLOT(OnDataChange(const QModelIndex &topLeft, QModelIndex &buttomRight)));
 }
 
-void TableAlt::setDTName(QString dbname,QString tname)
+void TableAlt::SetDTName(QString dbname,QString tname)
 {
     this->dbName = dbname;
     this->tName = tname;
 }
 
-void TableAlt::loadTableInfo()
+void TableAlt::LoadTableInfo()
 {
 	newTableName->setText(tName);
 	dbNameLabel->setText(dbName);
@@ -87,14 +87,14 @@ void TableAlt::loadTableInfo()
 		col_extra.clear();
 		//特殊状态归零
 		onInsertFlag = 0;
-		getTableAllCols(tName,col_name,col_default,col_isNull,col_type,col_key,col_extra,col_uni);
+		GetTableAllCols(tName,col_name,col_default,col_isNull,col_type,col_key,col_extra,col_uni);
 		columns_num = col_name.length();
 		tableOpt->setRowCount(columns_num);
 	}
 	else
 	{
 		//第一次初始化需要加载视图
-		getTableAllCols(tName,col_name,col_default,col_isNull,col_type,col_key,col_extra,col_uni);
+		GetTableAllCols(tName,col_name,col_default,col_isNull,col_type,col_key,col_extra,col_uni);
 		columns_num = col_name.length();
 		tableOpt->setRowCount(columns_num);
 		//动态数组定义问题？？？
@@ -152,12 +152,12 @@ void TableAlt::loadTableInfo()
 	}
 }
 
-void TableAlt::onDataChange(const QModelIndex &topLeft, QModelIndex &buttomRight)
+void TableAlt::OnDataChange(const QModelIndex &topLeft, QModelIndex &buttomRight)
 {
     qDebug("alter hhhhhhhhhhhhhhhhhhhhhhhhhhhhhh!");
 }
 
-void TableAlt::applyAlter(bool param)
+void TableAlt::ApplyAlter(bool param)
 {
 	QString new_col_name;
 	QString new_col_default;
@@ -287,14 +287,14 @@ void TableAlt::applyAlter(bool param)
 			alterQuery += oneQuery[i];	
 		}
 		//直接组装好语句还是设置好参数调用函数
-		string flag = executeWithQuery(0,alterQuery+";");
+		string flag = ExecuteWithQuery(0,alterQuery+";");
 
 		if(flag.compare("success")==0)
 		{
 			//数据库操作成功后 对逻辑模型数据进行更新
-			confirmLatestUpdateOperation();
+			ConfirmLatestUpdateOperation();
 			QMessageBox::information(this,"Infomation","Update columns infomation SUCCESS!");
-			//updateAllInfoAfter(tarColNum,2);
+			//UpdateAllInfoAfter(tarColNum,2);
 		}
 		else
 		{
@@ -309,13 +309,13 @@ void TableAlt::applyAlter(bool param)
 }
 
 //修改表名
-void TableAlt::renameTable()
+void TableAlt::RenameTable()
 {
 	//获取旧表名和新表名 调用修改表名函数
 	QString new_TName;
 	QString flag;
 	new_TName = this->newTableName->text();
-	flag = AlterTable_RenameTable(tName,new_TName);
+	flag = AlterTableRenameTable(tName,new_TName);
 	if(flag.compare("OK")!=0)
 	{
 		//数据库操作成功后 对逻辑模型数据更新
@@ -330,7 +330,7 @@ void TableAlt::renameTable()
 
 //修改
 
-void TableAlt::insertCol()
+void TableAlt::InsertCol()
 {
     //获取列信息 调用增列函数 返回提示信息
     QString new_colName;
@@ -379,7 +379,7 @@ void TableAlt::insertCol()
     }
 }
 
-void TableAlt::confirmInsertCol()
+void TableAlt::ConfirmInsertCol()
 {
 	QStringList allColNames,allColTypes,allColOpts,allPkSets;
 	QStringList allPkOpts,allIndexOpts;//主键约束（只有列名）索引约束（只有列名）
@@ -448,7 +448,7 @@ void TableAlt::confirmInsertCol()
 			allColOpts<<oneOpt;		
 		}
 		//进行数据库改表操作
-		QString resFlag = AlterTable_AddColumns(dbName,tName,allColNames,allColTypes,allColOpts,allPkOpts,allIndexOpts);
+		QString resFlag = AlterTableAddColumns(dbName,tName,allColNames,allColTypes,allColOpts,allPkOpts,allIndexOpts);
 		//解除旧列锁定
 		for(int i=0;i<this->tableOpt->rowCount();i++)
 		{
@@ -469,21 +469,21 @@ void TableAlt::confirmInsertCol()
 		if(resFlag.compare("success")==0)
 		{
 			//数据库操作成功后 对逻辑模型数据进行更新
-			confirmLatestAddOperation(endLine);
+			ConfirmLatestAddOperation(endLine);
 			QMessageBox::information(this,"Infomation","Add new columns SUCCESS!");
-			//updateAllInfoAfter(tarColNum,0);
+			//UpdateAllInfoAfter(tarColNum,0);
 		}
 		else
 		{
 			//需要回滚增列操作吗？
 			//打印错误信息
-			//rollBackLatestAddOperation(startLine,endLine);
+			//RollBackLatestAddOperation(startLine,endLine);
 			QMessageBox::information(this,"Add Column Failed!","Please check all items");
 		}
 	}
 }
 
-void TableAlt::dropCol()
+void TableAlt::DropCol()
 {
 	//获取列名 调用删列函数 返回提示信息
 	QString drop_colName;
@@ -502,11 +502,11 @@ void TableAlt::dropCol()
 	{
 		tarColNum<<""+this->tableOpt->currentRow();
 		drop_colName = this->tableOpt->item(this->tableOpt->currentRow(),0)->text();
-		flag = AlterTable_DropColumn(dbName,tName,drop_colName);
+		flag = AlterTableDropColumn(dbName,tName,drop_colName);
 		if(flag.compare("OK")!=0)
 		{
 			//删除不需要回退
-		//	rollBackLatestDropOperation(this->tableOpt->currentRow());
+		//	RollBackLatestDropOperation(this->tableOpt->currentRow());
 			QMessageBox::information(this,"Drop Column Failed!",flag);
 		}
 		else
@@ -514,14 +514,14 @@ void TableAlt::dropCol()
 			QMessageBox::information(this,"Drop Column Success!","Please refresh table");
 			//onInsertFlag=3;
 			//数据库操作成功后 对逻辑模型数据进行更新
-			confirmLatestDropOperation(this->tableOpt->currentRow());
-			//updateAllInfoAfter(tarColNum,1);
+			ConfirmLatestDropOperation(this->tableOpt->currentRow());
+			//UpdateAllInfoAfter(tarColNum,1);
 		}
 	}
 }
 
 ////更新tablealt中的原数据（上一次操作后的数据） 以便在更改时判断那些列被更改了
-//void TableAlt::updateAllInfoAfter(QStringList colNumList,int optType)
+//void TableAlt::UpdateAllInfoAfter(QStringList colNumList,int optType)
 //{
 //	int oldColSum,newColSum;
 //
@@ -630,7 +630,7 @@ TableAlt::~TableAlt()
 
 //因为用户对视图进行了修改而数据库修改失败 所以需要将视图上的修改进行回退
 //回退增列操作
-void TableAlt::rollBackLatestAddOperation(int oldColSum, int newColSum)
+void TableAlt::RollBackLatestAddOperation(int oldColSum, int newColSum)
 {
 	//将从修改前总列数至修改后总列数之间的列去掉
 	for(int i=oldColSum;i<newColSum;i++)
@@ -644,7 +644,7 @@ void TableAlt::rollBackLatestAddOperation(int oldColSum, int newColSum)
 }
 
 //回退删列操作 不需要
-//void TableAlt::rollBackLatestDropOperation(int tarColNum)
+//void TableAlt::RollBackLatestDropOperation(int tarColNum)
 //{
 //	//将目标行添加回原位置(位置参数由零开始)
 //	this->tableOpt->insertRow(tarColNum);
@@ -680,7 +680,7 @@ void TableAlt::rollBackLatestAddOperation(int oldColSum, int newColSum)
 //
 //}
 //回退列信息修改操作
-void TableAlt::rollBackLatestUpdateOperation()
+void TableAlt::RollBackLatestUpdateOperation()
 {
 	int i,j;
 	for(i=0;i<columns_num;i++)
@@ -717,7 +717,7 @@ void TableAlt::rollBackLatestUpdateOperation()
 }
 //因为用户对数据库修改成功之后 逻辑模型中的数据还是修改之前的 所以需要进行更新 以便进行继续的修改
 //插入列操作之后向逻辑模型中添加
-void TableAlt::confirmLatestAddOperation(int newColSum)
+void TableAlt::ConfirmLatestAddOperation(int newColSum)
 {
 	//先保存旧行数 再对行数属性更新！！！
 	int oldColSum = this->columns_num;
@@ -777,7 +777,7 @@ void TableAlt::confirmLatestAddOperation(int newColSum)
 	}
 }
 //在数据库完成删列操作成功后 同时对视图进行删除 以及对逻辑模型数据进行删除 与增列和修改列信息有所区别
-void TableAlt::confirmLatestDropOperation(int tarColNum)
+void TableAlt::ConfirmLatestDropOperation(int tarColNum)
 {
 	this->columns_num --;
 	//视图删除
@@ -796,7 +796,7 @@ void TableAlt::confirmLatestDropOperation(int tarColNum)
 	col_key.removeAt(tarColNum);
 }
 //在数据库更新成功之后 修改列信息操作已在视图上完成 需要对逻辑模型数据进行更新
-void TableAlt::confirmLatestUpdateOperation()
+void TableAlt::ConfirmLatestUpdateOperation()
 {
 	int i=0;
 	int j=0;
@@ -853,7 +853,7 @@ void TableAlt::confirmLatestUpdateOperation()
 	}
 }
 
-void TableAlt::refreshAllInfo()
+void TableAlt::RefreshAllInfo()
 {
 	int i;
 	if(this->onInsertFlag==1)
@@ -875,7 +875,7 @@ void TableAlt::refreshAllInfo()
 			col_extra.clear();
 			col_uni.clear();
 			//不止视图需要刷新 数据模型一样需要更新
-			getTableAllCols(tName,col_name,col_default,col_isNull,col_type,col_key,col_extra,col_uni);
+			GetTableAllCols(tName,col_name,col_default,col_isNull,col_type,col_key,col_extra,col_uni);
 			columns_num = col_name.length();
 			tableOpt->setRowCount(columns_num);
 			for(int i=0;i<columns_num;i++)
