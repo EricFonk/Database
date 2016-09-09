@@ -11,43 +11,43 @@
 #include "mylistview.h"
 TableWidget::TableWidget()
 {
-    //²åÈëÊı¾İ°´Å¥
+    //æ’å…¥æ•°æ®æŒ‰é’®
     QPushButton *pushButton = new QPushButton(tr("insert"), this);
     pushButton->setGeometry(QRect(70, 40, 75, 23));
-    //É¾³ıÄ³ĞĞ°´Å¥
+    //åˆ é™¤æŸè¡ŒæŒ‰é’®
     QPushButton *pushButton2 = new QPushButton(tr("delete"), this);
     pushButton2->setGeometry(QRect(70, 40, 75, 23));
-    //Ë¢ĞÂ±íÊı¾İ°´Å¥
+    //åˆ·æ–°è¡¨æ•°æ®æŒ‰é’®
     QPushButton *pushButton3 = new QPushButton(tr("refresh"), this);
     pushButton2->setGeometry(QRect(70, 40, 75, 23));
-    //³õÊ¼»¯±í¸ñ¿Ø¼ş
+    //åˆå§‹åŒ–è¡¨æ ¼æ§ä»¶
     table = new QTableWidget(this);
     table->setColumnCount(1);
     table->setRowCount(1);
-    //³õÊ¼»¯±íÍ·
+    //åˆå§‹åŒ–è¡¨å¤´
     QStringList headers;
     headers << "new Column";
     table->setHorizontalHeaderLabels(headers);
-    //Ìí¼Ó¿Ø¼ş
+    //æ·»åŠ æ§ä»¶
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(table);
     mainLayout->addWidget(pushButton);
     mainLayout->addWidget(pushButton2);
     mainLayout->addWidget(pushButton3);
     this->setLayout(mainLayout);
-    //µã»÷Ä³¸öµ¥Ôª¸ñÊ±´¥·¢¸üĞÂ²Ù×÷
+    //ç‚¹å‡»æŸä¸ªå•å…ƒæ ¼æ—¶è§¦å‘æ›´æ–°æ“ä½œ
     connect(table, SIGNAL(clicked(QModelIndex)), this, SLOT(UpdateData(QModelIndex)));
-    //µã»÷ĞÂÔö°´Å¥Ê±Ïò±í¸ñ²åÈëÒ»ĞĞ
+    //ç‚¹å‡»æ–°å¢æŒ‰é’®æ—¶å‘è¡¨æ ¼æ’å…¥ä¸€è¡Œ
     connect(pushButton, SIGNAL(clicked()), this, SLOT(InsertLine()));
-    //µã»÷É¾³ı°´Å¥Ê±»ñÈ¡Ñ¡ÖĞĞĞ²¢½«ÆäÉ¾³ı
+    //ç‚¹å‡»åˆ é™¤æŒ‰é’®æ—¶è·å–é€‰ä¸­è¡Œå¹¶å°†å…¶åˆ é™¤
     connect(pushButton2, SIGNAL(clicked()), this, SLOT(DeleteLine()));
-    //µã»÷Ë¢ĞÂ°´Å¥Ê±Ë¢ĞÂ±í¸ñÖĞËùÓĞÊı¾İ
-    //´ı¸Ä½ø µã»÷ºóÅĞ¶ÏÊı¾İÊÇ·ñ±ä»¯²¢ÌáÊ¾ÓÃ»§±£´æ¸Ä¶¯
+    //ç‚¹å‡»åˆ·æ–°æŒ‰é’®æ—¶åˆ·æ–°è¡¨æ ¼ä¸­æ‰€æœ‰æ•°æ®
+    //å¾…æ”¹è¿› ç‚¹å‡»ååˆ¤æ–­æ•°æ®æ˜¯å¦å˜åŒ–å¹¶æç¤ºç”¨æˆ·ä¿å­˜æ”¹åŠ¨
     connect(pushButton3, SIGNAL(clicked()), this, SLOT(RefreshTableData()));
 }
-//ÉèÖÃ±íÍ·
+//è®¾ç½®è¡¨å¤´
 /*
-	ÉèÖÃÁĞ¸öÊı ÁĞÃû³Æ
+	è®¾ç½®åˆ—ä¸ªæ•° åˆ—åç§°
  */
 void TableWidget::SetHeaders(QString table_name,int col,QStringList headers,QString main,int pos)
 {
@@ -58,10 +58,10 @@ void TableWidget::SetHeaders(QString table_name,int col,QStringList headers,QStr
     table->setColumnCount(col);
     table->setHorizontalHeaderLabels(headers);
 }
-//ĞÂÔöÒ»ĞĞ
+//æ–°å¢ä¸€è¡Œ
 /*
-	¼ÓÈëInsertTable¿Ø¼şÒÔÍê³ÉĞÂÔöĞĞ¹¦ÄÜ
-	´ıÍêÉÆ
+	åŠ å…¥InsertTableæ§ä»¶ä»¥å®Œæˆæ–°å¢è¡ŒåŠŸèƒ½
+	å¾…å®Œå–„
  */
 void TableWidget::InsertLine()
 {
@@ -69,11 +69,11 @@ void TableWidget::InsertLine()
     t->show();
     t->SetHeaders(qSumCol,qHead);
 }
-//¼ÓÔØ±í¸ñÊı¾İ
+//åŠ è½½è¡¨æ ¼æ•°æ®
 /*
-	½«´«ÈëµÄdataÒÔ//½øĞĞ·Ö½â
-	ÖØÖÃ±í¸ñĞĞÊı
-	Í¨¹ıĞĞÊıÓëÁĞÊı±éÀú±í¸ñÉèÖÃÊıÖµ
+	å°†ä¼ å…¥çš„dataä»¥//è¿›è¡Œåˆ†è§£
+	é‡ç½®è¡¨æ ¼è¡Œæ•°
+	é€šè¿‡è¡Œæ•°ä¸åˆ—æ•°éå†è¡¨æ ¼è®¾ç½®æ•°å€¼
  */
 void TableWidget::InitTableData(QStringList data,int sumRow,int sumCol)
 {
@@ -92,11 +92,11 @@ void TableWidget::InitTableData(QStringList data,int sumRow,int sumCol)
         }
     }
 }
-//Ë¢ĞÂ±í¸ñÊı¾İ
+//åˆ·æ–°è¡¨æ ¼æ•°æ®
 /*
-	»ñÈ¡Ö÷¼üÃû
-	µ÷ÓÃ²éÑ¯º¯Êı
-	µ÷ÓÃ¼ÓÔØÊı¾İº¯Êı
+	è·å–ä¸»é”®å
+	è°ƒç”¨æŸ¥è¯¢å‡½æ•°
+	è°ƒç”¨åŠ è½½æ•°æ®å‡½æ•°
  */
 void TableWidget::RefreshTableData()
 {
@@ -109,11 +109,11 @@ void TableWidget::RefreshTableData()
     InitTableData(real_data,row,col);
 }
 
-//¸üĞÂÊı¾İ
+//æ›´æ–°æ•°æ®
 /*
-	»ñÈ¡µ±Ç°Ñ¡ÖĞµÄĞĞÊıºÍÁĞÊı
-	µ÷ÓÃupdateº¯Êı¸üĞÂÊı¾İ¿â
-	·µ»Ø³É¹¦»ò´íÎóĞÅÏ¢
+	è·å–å½“å‰é€‰ä¸­çš„è¡Œæ•°å’Œåˆ—æ•°
+	è°ƒç”¨updateå‡½æ•°æ›´æ–°æ•°æ®åº“
+	è¿”å›æˆåŠŸæˆ–é”™è¯¯ä¿¡æ¯
  */
 void TableWidget::UpdateData(QModelIndex index)
 {
@@ -140,12 +140,12 @@ void TableWidget::QSetErrorInfo(QString error)
 {
     errorInfo = error;
 }
-//É¾³ıÄ³ĞĞ
+//åˆ é™¤æŸè¡Œ
 /*
-	»ñÈ¡ÓÃ»§Ñ¡ÖĞµÄ¸ñ×ÓµÄĞĞÊı
-	ÌáÊ¾ÓÃ»§ÊÇ·ñÈ·¶¨É¾³ı±¾ĞĞ
-	×é×°É¾³ıÓï¾ä
-	µ÷ÓÃÖ´ĞĞsqlÓï¾äº¯Êı½øĞĞÊı¾İÉ¾³ı
+	è·å–ç”¨æˆ·é€‰ä¸­çš„æ ¼å­çš„è¡Œæ•°
+	æç¤ºç”¨æˆ·æ˜¯å¦ç¡®å®šåˆ é™¤æœ¬è¡Œ
+	ç»„è£…åˆ é™¤è¯­å¥
+	è°ƒç”¨æ‰§è¡Œsqlè¯­å¥å‡½æ•°è¿›è¡Œæ•°æ®åˆ é™¤
  */
 void TableWidget::DeleteLine()
 {

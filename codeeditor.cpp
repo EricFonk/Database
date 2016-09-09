@@ -8,6 +8,7 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
     connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightCurrentLine()));
+    
 
     updateLineNumberAreaWidth(0);
     setMode(BROWSE);
@@ -40,6 +41,8 @@ void CodeEditor::updateLineNumberArea(const QRect &rect, int dy)
 
     if (rect.contains(viewport()->rect()))
         updateLineNumberAreaWidth(0);
+    
+//    qDebug() << this->getText();
 }
 
 void CodeEditor::resizeEvent(QResizeEvent *e)
@@ -107,4 +110,9 @@ void CodeEditor::setMode(editorMode mode)
         this->setStyleSheet("background:#ffffff;");
          highlightCurrentLine();
     }
+}
+
+QString CodeEditor::getText()
+{
+    QString text = this->toPlainText();
 }

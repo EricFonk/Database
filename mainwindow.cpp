@@ -580,8 +580,9 @@ void MainWindow::SchemaTreeInit()
 void MainWindow::ManageTreeInit()
 {
     QTreeWidgetItem *temp_root = new QTreeWidgetItem(manageTree,QStringList("Variables"));
-    QTreeWidgetItem *temp_root2 = new QTreeWidgetItem(manageTree,QStringList("Connections"));
-    QTreeWidgetItem *temp_root3 = new QTreeWidgetItem(manageTree,QStringList("Users and Privileges"));
+    QTreeWidgetItem *temp_root1 = new QTreeWidgetItem(manageTree,QStringList("Connections"));
+    QTreeWidgetItem *temp_root2 = new QTreeWidgetItem(manageTree,QStringList("Users and Privileges"));
+    QTreeWidgetItem *temp_root3 = new QTreeWidgetItem(manageTree,QStringList("Export & Import"));
 }
 
 void MainWindow::InitManageInfo(QTreeWidgetItem *temp_root, int temp)
@@ -631,6 +632,13 @@ void MainWindow::InitManageInfo(QTreeWidgetItem *temp_root, int temp)
         UserPanel=new Panel_UserPrivileges();
         rightLayout->addWidget(UserPanel);
         
+    }else if(manageTree->currentItem()->text(0).compare("Export & Import")==0){
+        QWidget *temp = rightLayout->itemAt(0)->widget();
+        rightLayout->removeWidget(temp);
+        delete(temp);
+        
+        ExportImport = new Export_and_Import();
+        rightLayout->addWidget(ExportImport);
     }
     //QMessageBox::information(this, "ERROR!", mysql_error(&mysqlObj.mysql));
 }

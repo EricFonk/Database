@@ -14,6 +14,7 @@
 #include "table_alter.h"
 #include "schemas_test.h"
 #include "panel_userprivileges.h"
+#include "export_and_import.h"
 #include "qFunctionTest.h"
 #include "qProcedureTest.h"
 #include "qViewTest.h"
@@ -119,6 +120,7 @@ private:
     
     QMenu *mainMenu;
     Panel_UserPrivileges *UserPanel;
+    Export_and_Import *ExportImport;
     
     //void initConnection();
 	void CreateMenu();

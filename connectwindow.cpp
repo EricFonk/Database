@@ -40,6 +40,7 @@ void connectwindow::setupUI()
     tableSizePolicy.setVerticalStretch(0);
     tableSizePolicy.setHeightForWidth(dataView->sizePolicy().hasHeightForWidth());
     dataView->setSizePolicy(tableSizePolicy);
+    dataView->setSelectionBehavior(QAbstractItemView::SelectRows);
     gridLayout->addWidget(dataView);
     
     bottomWidget=new QWidget(this);
@@ -150,7 +151,7 @@ void connectwindow::loginConnect()
         {
             if (mysql_real_connect(&mysql, nowHost.c_str(), nowUserName.c_str(), nowPswd.c_str(), "workbenchdb", 0, NULL, 0) != NULL)
             {
-                QMessageBox::information(NULL, "Connect Test", "Connect Success");
+                //QMessageBox::information(NULL, "Connect Test", "Connect Success");
                 mw=new MainWindow();
                 mw->show();
                 return;

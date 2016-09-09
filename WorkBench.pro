@@ -33,7 +33,10 @@ SOURCES += main.cpp\
     createConnectWindow.cpp \
     panel_userprivileges.cpp \
     codeeditor.cpp \
-    myhighlighter.cpp
+    myhighlighter.cpp \
+    export_and_import.cpp \
+    ExportPart.cpp \
+    ImportPart.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -52,4 +55,7 @@ HEADERS  += mainwindow.h \
     panel_userprivileges.h \
     codeeditor.h \
     typedef.h \
-    myhighlighter.h
+    myhighlighter.h \
+    export_and_import.h \
+    ExportPart.h \
+    ImportPart.h
