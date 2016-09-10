@@ -13,7 +13,7 @@
 #include <QtGui>
 #include <QString>
 #include <QStringList>
-
+#include "Widget_ForeignKey.h"
 
 
 class TableAlt:public QWidget
@@ -24,6 +24,9 @@ public:
 	TableAlt();
 	~TableAlt();
 public:
+	QTabWidget *_allTabOpts;
+	QWidget *_alterCols;
+	Widget_ForeignKey *_alterFK;
 	QTableWidget *tableOpt;
 	QLineEdit *newTableName;//表名输入框
 	QLabel *dbNameLabel;//所属模式标签
@@ -42,33 +45,35 @@ public:
 	QStringList col_type;//列数据类型list
 	QStringList col_key;//键信息list
 	QStringList col_extra;//自增等额外约束（目前只有自增）
-	QStringList col_uni;//唯一约束 
-	void SetDTName(QString dbname, QString tname);
-	void LoadTableInfo();
+	QStringList col_uni;//唯一约束
+	QStringList col_unsign;
+	QStringList col_zero;
+	void setDTName(QString dbname, QString tname);
+	void loadTableInfo();
 
 	//回退对视图数据最近一次的加列操作
-	void RenameTable();
+	void renameTable();
 	//回退对视图数据最近一次的删列操作
-	void RollBackLatestAddOperation(int oldColSum, int newColSum);
+	void rollBackLatestAddOperation(int oldColSum, int newColSum);
 	//回退对视图数据最近一次的所有更新操作
-	void RollBackLatestDropOperation(int tarColNum);
+	void rollBackLatestDropOperation(int tarColNum);
 	//确认最近的新增列操作（在数据库完成实际操作后对逻辑模型修改）
-	void ConfirmLatestAddOperation(int newColSum);
+	void confirmLatestAddOperation(int newColSum);
 	//确认最近的删列操作（在数据库完成实际操作后对逻辑模型修改）
-	void ConfirmLatestDropOperation(int tarColNum);
+	void confirmLatestDropOperation(int tarColNum);
 	//确认最近的列信息修改操作（在数据库完成实际操作后对逻辑模型修改）
-	void ConfirmLatestUpdateOperation();
+	void confirmLatestUpdateOperation();
 
-	void RollBackLatestUpdateOperation();
-	void ComfirmLatestOpt(int optType);
-	void UpdateAllInfoAfter(QStringList colNumList,int optType);
+	void rollBackLatestUpdateOperation();
+	void comfirmLatestOpt(int optType);
+	void updateAllInfoAfter(QStringList colNumList,int optType);
 	private slots:
-		void OnDataChange(const QModelIndex &topLeft, QModelIndex &buttomRight);
-		void InsertCol();
-		void ConfirmInsertCol();
-		void DropCol();
-		void ApplyAlter(bool);
-		void RefreshAllInfo();
+		void onDataChange(const QModelIndex &topLeft, QModelIndex &buttomRight);
+		void insertCol();
+		void confirmInsertCol();
+		void dropCol();
+		void applyAlter(bool);
+		void refreshAllInfo();
 };
 
 #endif /* table_alter_h */

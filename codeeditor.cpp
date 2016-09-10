@@ -115,4 +115,5 @@ void CodeEditor::setMode(editorMode mode)
 QString CodeEditor::getText()
 {
     QString text = this->toPlainText();
+	return text;
 }

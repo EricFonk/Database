@@ -14,10 +14,10 @@
 #include "table_alter.h"
 #include "schemas_test.h"
 #include "panel_userprivileges.h"
-#include "export_and_import.h"
 #include "qFunctionTest.h"
 #include "qProcedureTest.h"
 #include "qViewTest.h"
+#include "export_and_import.h"
 
 #include "codeeditor.h"
 #include "myhighlighter.h"
@@ -28,13 +28,13 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = 0);
-    ~MainWindow();
-    void SchemaTreeInit();
-    void ManageTreeInit();
-    
+	MainWindow(QWidget *parent = 0);
+	~MainWindow();
+	void schemaTreeInit();
+	void manageTreeInit();
+
 private:
-	QMenuBar *menuBarTest;
+	QMenuBar *menuBar1;
 	//菜单栏
 	QMenu *fileMenu;
 	QMenu *editMenu;
@@ -125,46 +125,36 @@ private:
     //void initConnection();
 	void CreateMenu();
 	void CreateAction();
-    void Open();
-    void InitTables();
-    void InitViews();
-    void InitRoutines();
-    
-    SchemasTest *schemaTable;
-    TableWidget *selectTable;
-    TableCrt *tableCreate;
-    TableAlt *tableAlter;
-    QAction *addAction;
-    QAction *openAction;
-    QStringList allDB;
-    bool hasCrtTable;
-    private slots:
-	void AddTableToTree(QString newTableName);
-    void CreateSchema();
-    void ShowMenu(const QPoint&);
-    void DeleteOneSchema();
-    void CreateOneTable();
-    void CreateOneView();
-    void CreateOneFunc();
-    void CreateOnePro();
-    void SelectAllofOneTable();
-    void AlterOneTable();
-    void InitOneFunction();
-    void InitOneProcedure();
-    void InitOneView();
-    
-    void InitManageInfo(QTreeWidgetItem *temp_root,int temp);
-    void InitOneDBInfo(QTreeWidgetItem *temp_root,int temp);
+	void open();
+	void initTables();
+	void initViews();
+	void initRoutines();
 
-	//菜单接口
-/*protected slots:
-    void New_Model();
-    void New_Query_Tab();
-    void Open_Model();
-    void Save_Model();
-    void Close_Connection_Tab();
-    void Close_Tab();*/
+	SchemasTest *schemaTable;
+	TableWidget *selectTable;
+	TableCrt *tableCreate;
+	TableAlt *tableAlter;
+	QAction *addAction;
+	QAction *openAction;
+	QStringList allDB;
+	bool hasCrtTable;
+	private slots:
+	void addTableToTree(QString newTableName);
+	void createSchema();
+	void showMenu(const QPoint&);
+	void deleteOneSchema();
+	void createOneTable();
+	void createOneView();
+	void createOneFunc();
+	void createOnePro();
+	void selectAllofOneTable();
+	void alterOneTable();
+	void initOneFunction();
+	void initOneProcedure();
+	void initOneView();
 
+	void initManageInfo(QTreeWidgetItem *temp_root, int temp);
+	void initOneDBInfo(QTreeWidgetItem *temp_root, int temp);
 };
 
 #endif // MAINWINDOW_H

@@ -36,7 +36,9 @@ SOURCES += main.cpp\
     myhighlighter.cpp \
     export_and_import.cpp \
     ExportPart.cpp \
-    ImportPart.cpp
+    ImportPart.cpp \
+    Widget_ForeignKey.cpp \
+    Widget_ShowCatalog.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -58,4 +60,6 @@ HEADERS  += mainwindow.h \
     myhighlighter.h \
     export_and_import.h \
     ExportPart.h \
-    ImportPart.h
+    ImportPart.h \
+    Widget_ForeignKey.h \
+    Widget_ShowCatalog.h

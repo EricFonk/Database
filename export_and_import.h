@@ -2,9 +2,8 @@
 #define EXPORT_AND_IMPORT_H
 
 #include <QtWidgets/QMainWindow>
-#include <ExportPart.h>
-#include <ImportPart.h>
-
+#include "ExportPart.h"
+#include "ImportPart.h"
 class Export_and_Import : public QWidget
 {
 	Q_OBJECT

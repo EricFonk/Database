@@ -347,7 +347,7 @@ Panel_UserPrivileges::Panel_UserPrivileges(QWidget *parent)
 	int numberOfColumns = 0; //获取列的数目
 	int numberOfRows = 0; //获取行的数目
 
-	judgement = QueryUserHost(userHost, &numberOfColumns, &numberOfRows);
+	judgement = Query_User_Host(userHost, &numberOfColumns, &numberOfRows);
 	if (judgement == "OK")
 	{
 		QStandardItemModel *userModel = new QStandardItemModel();
@@ -373,30 +373,30 @@ Panel_UserPrivileges::Panel_UserPrivileges(QWidget *parent)
 	}
 	/**********************************************************/
 	//槽函数连接
-	connect(ptnRefresh, SIGNAL(clicked()), this, SLOT(RefreshSlot()));
-	connect(tableView, SIGNAL(clicked(QModelIndex)), this, SLOT(ShowUserSlot()));
-	connect(ptnApply, SIGNAL(clicked()), this, SLOT(CreateUserSlot()));
-	connect(ptnAdd, SIGNAL(clicked()), this, SLOT(AddAcountSlot()));
-	connect(ptnExpire, SIGNAL(clicked()), this, SLOT(ExpirePasswordSlot()));
-	connect(ptnRevert, SIGNAL(clicked()), this, SLOT(RevertSlot()));
-	connect(ptnDelete, SIGNAL(clicked()), this, SLOT(DeleteSlot()));
-	connect(tableView, SIGNAL(clicked(QModelIndex)), this, SLOT(ShowPrivilegesSlot()));
-	connect(ptnApply3, SIGNAL(clicked()), this, SLOT(AuthorityManagementSlot()));
-	connect(ptnRevoke, SIGNAL(clicked()), this, SLOT(RevokeAllPrivilegesSlot()));
-	connect(ptnRevert3, SIGNAL(clicked()), this, SLOT(RevertCheckBoxSlot()));
-	connect(tableView, SIGNAL(clicked(QModelIndex)), this, SLOT(UserResourceSlot()));
-	connect(ptnApply2, SIGNAL(clicked()), this, SLOT(SetUserResourceSlot()));
-	connect(ptnRevert2, SIGNAL(clicked()), this, SLOT(RevertUserResourceSlot()));
-	connect(tableView, SIGNAL(clicked(QModelIndex)), this, SLOT(QuerySchemaSlot()));
-	connect(tab4PtnAddEntry, SIGNAL(clicked()), this, SLOT(AddEntrySlot()));
-	connect(tab4PtnSelctAll, SIGNAL(clicked()), this, SLOT(SelectAllSlot()));
-	connect(tab4PtnUnselectAll, SIGNAL(clicked()), this, SLOT(UnselectAllSlot()));
-	connect(ptnApply4, SIGNAL(clicked()), this, SLOT(SetSchemaPrivilegesSlot()));
-	connect(tab4TableView, SIGNAL(clicked(QModelIndex)), this, SLOT(ShowSchemaPrivilegesSlot()));
-	connect(tab4PtnRevokeAllPriv, SIGNAL(clicked()), this, SLOT(ShowSchemaPrivilegesSlot()));
-	connect(tab4PtnDeleteEntry, SIGNAL(clicked()), this, SLOT(DeleteEntrySlot()));
-	connect(ptnRevert4, SIGNAL(clicked()), this, SLOT(RevertSchemaSlot()));
-	//connect(tab4PtnRevokeAllPriv, SIGNAL(clicked()), this, SLOT(RevokeSchemaPrivilegesSlot()));
+	connect(ptnRefresh, SIGNAL(clicked()), this, SLOT(Refresh_Slot()));
+	connect(tableView, SIGNAL(clicked(QModelIndex)), this, SLOT(Show_User_Slot()));
+	connect(ptnApply, SIGNAL(clicked()), this, SLOT(Create_User_Slot()));
+	connect(ptnAdd, SIGNAL(clicked()), this, SLOT(Add_Acount_Slot()));
+	connect(ptnExpire, SIGNAL(clicked()), this, SLOT(Expire_Password_Slot()));
+	connect(ptnRevert, SIGNAL(clicked()), this, SLOT(Revert_Slot()));
+	connect(ptnDelete, SIGNAL(clicked()), this, SLOT(Delete_Slot()));
+	connect(tableView, SIGNAL(clicked(QModelIndex)), this, SLOT(Show_Privileges_Slot()));
+	connect(ptnApply3, SIGNAL(clicked()), this, SLOT(Authority_Management_Slot()));
+	connect(ptnRevoke, SIGNAL(clicked()), this, SLOT(Revoke_AllPrivileges_Slot()));
+	connect(ptnRevert3, SIGNAL(clicked()), this, SLOT(Revert_CheckBox_Slot()));
+	connect(tableView, SIGNAL(clicked(QModelIndex)), this, SLOT(User_Resource_Slot()));
+	connect(ptnApply2, SIGNAL(clicked()), this, SLOT(Set_User_Resource_Slot()));
+	connect(ptnRevert2, SIGNAL(clicked()), this, SLOT(Revert_User_Resource_Slot()));
+	connect(tableView, SIGNAL(clicked(QModelIndex)), this, SLOT(Query_Schema_Slot()));
+	connect(tab4PtnAddEntry, SIGNAL(clicked()), this, SLOT(Add_Entry_Slot()));
+	connect(tab4PtnSelctAll, SIGNAL(clicked()), this, SLOT(Select_All_Slot()));
+	connect(tab4PtnUnselectAll, SIGNAL(clicked()), this, SLOT(Unselect_All_Slot()));
+	connect(ptnApply4, SIGNAL(clicked()), this, SLOT(Set_Schema_Privileges_Slot()));
+	connect(tab4TableView, SIGNAL(clicked(QModelIndex)), this, SLOT(Show_Schema_Privileges_Slot()));
+	connect(tab4PtnRevokeAllPriv, SIGNAL(clicked()), this, SLOT(Show_Schema_Privileges_Slot()));
+	connect(tab4PtnDeleteEntry, SIGNAL(clicked()), this, SLOT(Delete_Entry_Slot()));
+	connect(ptnRevert4, SIGNAL(clicked()), this, SLOT(Revert_Schema_Slot()));
+	//connect(tab4PtnRevokeAllPriv, SIGNAL(clicked()), this, SLOT(Revoke_Schema_Privileges_Slot()));
 	/**********************************************************/
 
 }
@@ -405,7 +405,7 @@ Panel_UserPrivileges::~Panel_UserPrivileges()
 {
     
 }
-void Panel_UserPrivileges::RefreshSlot()
+void Panel_UserPrivileges::Refresh_Slot()
 {
 	QStringList userHost;
 	QString judgement;
@@ -413,7 +413,7 @@ void Panel_UserPrivileges::RefreshSlot()
 	int numberOfColumns = 0; //获取列的数目
 	int numberOfRows = 0; //获取行的数目
 
-	judgement = QueryUserHost(userHost, &numberOfColumns, &numberOfRows);
+	judgement = Query_User_Host(userHost, &numberOfColumns, &numberOfRows);
 	if (judgement == "OK")
 	{
 		QStandardItemModel *userModel = new QStandardItemModel();
@@ -449,7 +449,7 @@ void Panel_UserPrivileges::RefreshSlot()
 	ptnApply->setEnabled(false);
 	ptnDelete->setEnabled(false);
 }
-void Panel_UserPrivileges::ShowUserSlot()
+void Panel_UserPrivileges::Show_User_Slot()
 {
 	tabWidget->setEnabled(true);
 	tab1->setEnabled(true);
@@ -475,14 +475,14 @@ void Panel_UserPrivileges::ShowUserSlot()
 	QString judgement;
 	QString userName;
 
-	judgement = QueryUserHost(userHost, &numberOfColumns, &numberOfRows);
+	judgement = Query_User_Host(userHost, &numberOfColumns, &numberOfRows);
 	if (judgement == "OK")
 	{
 		userName = userHost.at(2 * currentRow);
 		ledName->setText(userHost.at(2 * currentRow));
 		ledHost->setText(userHost.at(2 * currentRow + 1));
 
-		judgement = QueryAuthentication(password, userName);
+		judgement = Query_Authentication(password, userName);
 		if (judgement == "OK")
 		{
 			ledPassword->setText(password.at(0));
@@ -499,7 +499,7 @@ void Panel_UserPrivileges::ShowUserSlot()
 		qDebug("ERROR!");
 	}
 }
-void Panel_UserPrivileges::CreateUserSlot()
+void Panel_UserPrivileges::Create_User_Slot()
 {
 	QString strName = ledName->text();
 	QString strHost = ledHost->text();
@@ -519,8 +519,8 @@ void Panel_UserPrivileges::CreateUserSlot()
 	}
 
 	QString judgement;
-	judgement = CreateUser(strName, strHost, strPassword);
-	RefreshSlot();
+	judgement = Create_User(strName, strHost, strPassword);
+	Refresh_Slot();
 
 	tabWidget->setEnabled(false);
 	ledName->setText("");
@@ -536,7 +536,7 @@ void Panel_UserPrivileges::CreateUserSlot()
 	ptnApply->setEnabled(false);
 	ptnRevert->setEnabled(false);
 }
-void Panel_UserPrivileges::AddAcountSlot()
+void Panel_UserPrivileges::Add_Acount_Slot()
 {
     tabWidget->setEnabled(true);
     tab1->setEnabled(true);
@@ -555,25 +555,25 @@ void Panel_UserPrivileges::AddAcountSlot()
     ledPassword->setText("");
     ledConfirm->setText("");
 }
-void Panel_UserPrivileges::RevertSlot()
+void Panel_UserPrivileges::Revert_Slot()
 {
     ledName->setText("");
     ledHost->setText("");
     ledPassword->setText("");
     ledConfirm->setText("");
 }
-void Panel_UserPrivileges::RevertCheckBoxSlot()
+void Panel_UserPrivileges::Revert_CheckBox_Slot()
 {
-    ShowPrivilegesSlot();
+    Show_Privileges_Slot();
 }
-void Panel_UserPrivileges::ExpirePasswordSlot()
+void Panel_UserPrivileges::Expire_Password_Slot()
 {
     ledPassword->setText("");
     ledConfirm->setText("");
     ptnApply->setEnabled(true);
     ptnRevert->setEnabled(true);
 }
-void Panel_UserPrivileges::DeleteSlot()
+void Panel_UserPrivileges::Delete_Slot()
 {
 	int currentRow = tableView->currentIndex().row(); //获取当前行
 	QString  judgement;
@@ -581,19 +581,19 @@ void Panel_UserPrivileges::DeleteSlot()
 	QStringList userHost;
 	int numberOfColumns = 0;
 	int numberOfRows = 0;
-	judgement = QueryUserHost(userHost, &numberOfColumns, &numberOfRows);
+	judgement = Query_User_Host(userHost, &numberOfColumns, &numberOfRows);
 	if (judgement == "OK")
 	{
 		userName = userHost.at(2 * currentRow);
-		judgement = DeleteUser(userName);
+		judgement = Delete_User(userName);
 	}
 	else
 	{
 		QMessageBox::information(this, "ERROR!", judgement);
 	}
-	RefreshSlot();
+	Refresh_Slot();
 }
-void Panel_UserPrivileges::ShowPrivilegesSlot()
+void Panel_UserPrivileges::Show_Privileges_Slot()
 {
 	int currentRow = tableView->currentIndex().row(); //获取当前行
 	tab3->setEnabled(true);
@@ -606,16 +606,16 @@ void Panel_UserPrivileges::ShowPrivilegesSlot()
 	int numberOfColumns = 0;
 	int numberOfRows = 0;
 
-	judgement = QueryUserHost(userHost, &numberOfColumns, &numberOfRows);
+	judgement = Query_User_Host(userHost, &numberOfColumns, &numberOfRows);
 	if (judgement == "OK")
 	{
 		userName = userHost.at(2 * currentRow);
 		host = userHost.at(2 * currentRow + 1);
 
-		judgement = QueryPrivilegesVariables(userName, host);
+		judgement = Query_Privileges_Variables(userName, host);
 		if (judgement == "OK")
 		{
-			judgement = QueryVariables(userPriv);
+			judgement = Query_Variables(userPriv);
 			if (judgement == "OK")
 			{
 				QString selectPriv = userPriv.at(0);
@@ -888,7 +888,7 @@ void Panel_UserPrivileges::ShowPrivilegesSlot()
 		qDebug("ERROR!");
 	}
 }
-void Panel_UserPrivileges::RevokeAllPrivilegesSlot()
+void Panel_UserPrivileges::Revoke_AllPrivileges_Slot()
 {
 	int currentRow = tableView->currentIndex().row(); //获取当前行
 	tab3->setEnabled(true);
@@ -897,7 +897,7 @@ void Panel_UserPrivileges::RevokeAllPrivilegesSlot()
 	QStringList userHost;
 	int numberOfColumns = 0;
 	int numberOfRows = 0;
-	judgement = QueryUserHost(userHost, &numberOfColumns, &numberOfRows);
+	judgement = Query_User_Host(userHost, &numberOfColumns, &numberOfRows);
 	if (judgement == "OK")
 	{
 		QString userName = userHost.at(2 * currentRow);
@@ -905,7 +905,7 @@ void Panel_UserPrivileges::RevokeAllPrivilegesSlot()
 		switch (QMessageBox::warning(this, tr("Revoke All Privileges"), tr("Please confirm revokation of all privileges!"), QMessageBox::Ok | QMessageBox::Cancel))
 		{
 		case QMessageBox::Ok:
-			judgement = RevokePrivileges(userName, host);
+			judgement = Revoke_Privileges(userName, host);
 			if (judgement == "OK")
 			{
 				QMessageBox::information(this, tr("Revoke All Privileges"), tr("Revoke all privileges successfully!"), QMessageBox::Ok);
@@ -952,7 +952,7 @@ void Panel_UserPrivileges::RevokeAllPrivilegesSlot()
 		qDebug("ERROR!");
 	}
 }
-void Panel_UserPrivileges::AuthorityManagementSlot()
+void Panel_UserPrivileges::Authority_Management_Slot()
 {
 	int currentRow = tableView->currentIndex().row(); //获取当前行
 	tab3->setEnabled(true);
@@ -962,7 +962,7 @@ void Panel_UserPrivileges::AuthorityManagementSlot()
 	QStringList userHost;
 	int numberOfColumns = 0;
 	int numberOfRows = 0;
-	judgement = QueryUserHost(userHost, &numberOfColumns, &numberOfRows);
+	judgement = Query_User_Host(userHost, &numberOfColumns, &numberOfRows);
 	if (judgement == "OK")
 	{
 		QString userName = userHost.at(2 * currentRow);
@@ -970,169 +970,169 @@ void Panel_UserPrivileges::AuthorityManagementSlot()
 		if (cboxSelect->isChecked())
 		{
 			identifier = 0;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 		}
 		if (cboxInsert->isChecked())
 		{
 			identifier = 1;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 		}
 		if (cboxUpdate->isChecked())
 		{
 			identifier = 2;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 		}
 		if (cboxDelete->isChecked())
 		{
 			identifier = 3;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 
 		}
 		if (cboxCreate->isChecked())
 		{
 			identifier = 4;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 
 		}
 		if (cboxDrop->isChecked())
 		{
 			identifier = 5;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 
 		}
 		if (cboxReload->isChecked())
 		{
 			identifier = 6;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 
 		}
 		if (cboxShutDown->isChecked())
 		{
 			identifier = 7;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 
 		}
 		if (cboxProcess->isChecked())
 		{
 			identifier = 8;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 
 		}
 		if (cboxFile->isChecked())
 		{
 			identifier = 9;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 
 		}
 		if (cboxOption->isChecked())
 		{
 			identifier = 10;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 
 		}
 		if (cboxReferences->isChecked())
 		{
 			identifier = 11;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 
 		}
 		if (cboxIndex->isChecked())
 		{
 			identifier = 12;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 
 		}
 		if (cboxAlter->isChecked())
 		{
 			identifier = 13;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 
 		}
 		if (cboxShowDatabases->isChecked())
 		{
 			identifier = 14;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 
 		}
 		if (cboxSuper->isChecked())
 		{
 			identifier = 15;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 
 		}
 		if (cboxTemporaryTables->isChecked())
 		{
 			identifier = 16;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 
 		}
 		if (cboxLockTables->isChecked())
 		{
 			identifier = 17;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 
 		}
 		if (cboxExecute->isChecked())
 		{
 			identifier = 18;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 
 		}
 		if (cboxSlave->isChecked())
 		{
 			identifier = 19;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 
 		}
 		if (cboxClient->isChecked())
 		{
 			identifier = 20;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 
 		}
 		if (cboxCreateView->isChecked())
 		{
 			identifier = 21;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 
 		}
 		if (cboxShowView->isChecked())
 		{
 			identifier = 22;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 
 		}
 		if (cboxCreateRoutine->isChecked())
 		{
 			identifier = 23;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 
 		}
 		if (cboxAlterRountine->isChecked())
 		{
 			identifier = 24;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 
 		}
 		if (cboxCreateUser->isChecked())
 		{
 			identifier = 25;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 		}
 		if (cboxEvent->isChecked())
 		{
 			identifier = 26;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 		}
 		if (cboxTrigger->isChecked())
 		{
 			identifier = 27;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 		}
 		if (cboxCreateTableSpace->isChecked())
 		{
 			identifier = 28;
-			judgement = AuthorityManagement(identifier, userName, host);
+			judgement = Authority_Management(identifier, userName, host);
 		}
 		QMessageBox::information(this, tr("Set User's Privileges"), tr("Set the user's privileges successfully!"), QMessageBox::Ok);
 	}
@@ -1141,7 +1141,7 @@ void Panel_UserPrivileges::AuthorityManagementSlot()
 		qDebug("ERROR!");
 	}
 }
-void Panel_UserPrivileges::UserResourceSlot()
+void Panel_UserPrivileges::User_Resource_Slot()
 {
 	int currentRow = tableView->currentIndex().row(); //获取当前行
 	tab2->setEnabled(true);
@@ -1152,12 +1152,12 @@ void Panel_UserPrivileges::UserResourceSlot()
 	int numberOfColumns = 0;
 	int numberOfRows = 0;
 
-	judgement = QueryUserHost(userHost, &numberOfColumns, &numberOfRows);
+	judgement = Query_User_Host(userHost, &numberOfColumns, &numberOfRows);
 	if (judgement == "OK")
 	{
 		QString userName = userHost.at(2 * currentRow);
 		QString host = userHost.at(2 * currentRow + 1);
-		judgement = QueryUserResource(userResource, userName, host);
+		judgement = Query_UserResource(userResource, userName, host);
 		if (judgement == "OK")
 		{
 			QString MaxQuestions = userResource.at(0);
@@ -1175,11 +1175,11 @@ void Panel_UserPrivileges::UserResourceSlot()
 		qDebug("ERROR!");
 	}
 }
-void Panel_UserPrivileges::RevertUserResourceSlot()
+void Panel_UserPrivileges::Revert_User_Resource_Slot()
 {
-    UserResourceSlot();
+    User_Resource_Slot();
 }
-void Panel_UserPrivileges::SetUserResourceSlot()
+void Panel_UserPrivileges::Set_User_Resource_Slot()
 {
 	int currentRow = tableView->currentIndex().row(); //获取当前行
 	tab2->setEnabled(true);
@@ -1190,7 +1190,7 @@ void Panel_UserPrivileges::SetUserResourceSlot()
 	int numberOfColumns = 0;
 	int numberOfRows = 0;
 
-	judgement = QueryUserHost(userHost, &numberOfColumns, &numberOfRows);
+	judgement = Query_User_Host(userHost, &numberOfColumns, &numberOfRows);
 	if (judgement == "OK")
 	{
 		QString userName = userHost.at(2 * currentRow);
@@ -1199,7 +1199,7 @@ void Panel_UserPrivileges::SetUserResourceSlot()
 		QString Updates = ledUpdates->text();
 		QString Connections = ledConnections->text();
 		QString UserConnections = ledCurrentcon->text();
-		judgement = SetUserResource(userName, host, Questions, Updates, Connections, UserConnections);
+		judgement = Set_UserResource(userName, host, Questions, Updates, Connections, UserConnections);
 		if (judgement == "OK")
 		{
 			QMessageBox::information(this, tr("Set User's Resource!"), tr("Set the user's resource successfully!"), QMessageBox::Ok);
@@ -1217,7 +1217,7 @@ void Panel_UserPrivileges::SetUserResourceSlot()
 
 //tab4
 
-void Panel_UserPrivileges::QuerySchemaSlot()
+void Panel_UserPrivileges::Query_Schema_Slot()
 {
 	int currentRow = tableView->currentIndex().row(); //获取当前行
 	tab4->setEnabled(true);
@@ -1228,12 +1228,12 @@ void Panel_UserPrivileges::QuerySchemaSlot()
 	int i = 0;
 	int numberOfColumns = 0;
 	int numberOfRows = 0; //行数
-	judgement = QueryUserHost(userHost, &numberOfColumns, &numberOfRows);
+	judgement = Query_User_Host(userHost, &numberOfColumns, &numberOfRows);
 	if (judgement == "OK")
 	{
 		QString userName = userHost.at(2 * currentRow);
 		QString host = userHost.at(2 * currentRow + 1);
-		judgement = QuerySchema(schema, userName, host, &numberOfRows);
+		judgement = Query_Schema(schema, userName, host, &numberOfRows);
 		if (judgement == "OK")
 		{
 			QStandardItemModel *schemaModel = new QStandardItemModel();
@@ -1260,7 +1260,7 @@ void Panel_UserPrivileges::QuerySchemaSlot()
 		qDebug("ERROR!");
 	}
 }
-void Panel_UserPrivileges::AddEntrySlot()
+void Panel_UserPrivileges::Add_Entry_Slot()
 {
 	tab4ComboBoxSchema->setEnabled(true);
 	tab4CboxSelect->setEnabled(true);
@@ -1285,7 +1285,7 @@ void Panel_UserPrivileges::AddEntrySlot()
 	tab4PtnUnselectAll->setEnabled(true);
 	tab4PtnSelctAll->setEnabled(true);
 	tab4ComboBoxSchema->setEnabled(true);
-	UnselectAllSlot();
+	Unselect_All_Slot();
 	QStringList schemaList;
 	bool judgement;
 	judgement = GetAllDatabases(schemaList);
@@ -1300,7 +1300,7 @@ void Panel_UserPrivileges::AddEntrySlot()
 	}
 
 }
-void Panel_UserPrivileges::SetSchemaPrivilegesSlot()
+void Panel_UserPrivileges::Set_Schema_Privileges_Slot()
 {
 	QString schema = tab4ComboBoxSchema->currentText();
 	int currentRow = tableView->currentIndex().row(); //获取当前行
@@ -1310,7 +1310,7 @@ void Panel_UserPrivileges::SetSchemaPrivilegesSlot()
 	QStringList userHost;
 	int numberOfColumns = 0;
 	int numberOfRows = 0;
-	judgement = QueryUserHost(userHost, &numberOfColumns, &numberOfRows);
+	judgement = Query_User_Host(userHost, &numberOfColumns, &numberOfRows);
 	if (judgement == "OK")
 	{
 		QString userName = userHost.at(2 * currentRow);
@@ -1318,97 +1318,97 @@ void Panel_UserPrivileges::SetSchemaPrivilegesSlot()
 		if (tab4CboxSelect->isChecked())
 		{
 			identifier = 0;
-			judgement = SetSchemaPrivileges(identifier, schema, userName, host);
+			judgement = Set_Schema_Privileges(identifier, schema, userName, host);
 		}
 		if (tab4CboxInsert->isChecked())
 		{
 			identifier = 1;
-			judgement = SetSchemaPrivileges(identifier, schema, userName, host);
+			judgement = Set_Schema_Privileges(identifier, schema, userName, host);
 		}
 		if (tab4CboxUpdate->isChecked())
 		{
 			identifier = 2;
-			judgement = SetSchemaPrivileges(identifier, schema, userName, host);
+			judgement = Set_Schema_Privileges(identifier, schema, userName, host);
 		}
 		if (tab4CboxDelete->isChecked())
 		{
 			identifier = 3;
-			judgement = SetSchemaPrivileges(identifier, schema, userName, host);
+			judgement = Set_Schema_Privileges(identifier, schema, userName, host);
 		}
 		if (tab4CboxExecute->isChecked())
 		{
 			identifier = 4;
-			judgement = SetSchemaPrivileges(identifier, schema, userName, host);
+			judgement = Set_Schema_Privileges(identifier, schema, userName, host);
 		}
 		if (tab4CboxShowView->isChecked())
 		{
 			identifier = 5;
-			judgement = SetSchemaPrivileges(identifier, schema, userName, host);
+			judgement = Set_Schema_Privileges(identifier, schema, userName, host);
 		}
 		if (tab4CboxCreate->isChecked())
 		{
 			identifier = 6;
-			judgement = SetSchemaPrivileges(identifier, schema, userName, host);
+			judgement = Set_Schema_Privileges(identifier, schema, userName, host);
 		}
 		if (tab4CboxAlter->isChecked())
 		{
 			identifier = 7;
-			judgement = SetSchemaPrivileges(identifier, schema, userName, host);
+			judgement = Set_Schema_Privileges(identifier, schema, userName, host);
 		}
 		if (tab4CboxReferences->isChecked())
 		{
 			identifier = 8;
-			judgement = SetSchemaPrivileges(identifier, schema, userName, host);
+			judgement = Set_Schema_Privileges(identifier, schema, userName, host);
 		}
 		if (tab4CboxIndex->isChecked())
 		{
 			identifier = 9;
-			judgement = SetSchemaPrivileges(identifier, schema, userName, host);
+			judgement = Set_Schema_Privileges(identifier, schema, userName, host);
 		}
 		if (tab4CboxCreateView->isChecked())
 		{
 			identifier = 10;
-			judgement = SetSchemaPrivileges(identifier, schema, userName, host);
+			judgement = Set_Schema_Privileges(identifier, schema, userName, host);
 		}
 		if (tab4CboxCreateRoutine->isChecked())
 		{
 			identifier = 11;
-			judgement = SetSchemaPrivileges(identifier, schema, userName, host);
+			judgement = Set_Schema_Privileges(identifier, schema, userName, host);
 		}
 		if (tab4CboxAlterRoutine->isChecked())
 		{
 			identifier = 12;
-			judgement = SetSchemaPrivileges(identifier, schema, userName, host);
+			judgement = Set_Schema_Privileges(identifier, schema, userName, host);
 		}
 		if (tab4CboxEvent->isChecked())
 		{
 			identifier = 13;
-			judgement = SetSchemaPrivileges(identifier, schema, userName, host);
+			judgement = Set_Schema_Privileges(identifier, schema, userName, host);
 		}
 		if (tab4CboxDrop->isChecked())
 		{
 			identifier = 14;
-			judgement = SetSchemaPrivileges(identifier, schema, userName, host);
+			judgement = Set_Schema_Privileges(identifier, schema, userName, host);
 		}
 		if (tab4CboxTrigger->isChecked())
 		{
 			identifier = 15;
-			judgement = SetSchemaPrivileges(identifier, schema, userName, host);
+			judgement = Set_Schema_Privileges(identifier, schema, userName, host);
 		}
 		if (tab4CboxGrantOption->isChecked())
 		{
 			identifier = 16;
-			judgement = SetSchemaPrivileges(identifier, schema, userName, host);
+			judgement = Set_Schema_Privileges(identifier, schema, userName, host);
 		}
 		if (tab4CboxCreateTempTables->isChecked())
 		{
 			identifier = 17;
-			judgement = SetSchemaPrivileges(identifier, schema, userName, host);
+			judgement = Set_Schema_Privileges(identifier, schema, userName, host);
 		}
 		if (tab4CboxLockTables->isChecked())
 		{
 			identifier = 18;
-			judgement = SetSchemaPrivileges(identifier, schema, userName, host);
+			judgement = Set_Schema_Privileges(identifier, schema, userName, host);
 		}
 		QMessageBox::information(this, tr("Set Schemas Privileges"), tr("Set the Schema privileges successfully!"), QMessageBox::Ok);
 	}
@@ -1416,8 +1416,8 @@ void Panel_UserPrivileges::SetSchemaPrivilegesSlot()
 	{
 		qDebug("ERROR!");
 	}
-	QuerySchemaSlot();
-	UnselectAllSlot();
+	Query_Schema_Slot();
+	Unselect_All_Slot();
 	tab4ComboBoxSchema->setEnabled(false);
 	tab4CboxSelect->setEnabled(false);
 	tab4CboxInsert->setEnabled(false);
@@ -1442,7 +1442,7 @@ void Panel_UserPrivileges::SetSchemaPrivilegesSlot()
 	tab4PtnSelctAll->setEnabled(false);
 	tab4PtnDeleteEntry->setEnabled(false);
 }
-void Panel_UserPrivileges::SelectAllSlot()
+void Panel_UserPrivileges::Select_All_Slot()
 {
 	tab4CboxSelect->setCheckState(Qt::Checked);
 	tab4CboxInsert->setCheckState(Qt::Checked);
@@ -1464,7 +1464,7 @@ void Panel_UserPrivileges::SelectAllSlot()
 	tab4CboxCreateTempTables->setCheckState(Qt::Checked);
 	tab4CboxLockTables->setCheckState(Qt::Checked);
 }
-void Panel_UserPrivileges::UnselectAllSlot()
+void Panel_UserPrivileges::Unselect_All_Slot()
 {
 	tab4CboxSelect->setCheckState(Qt::Unchecked);
 	tab4CboxInsert->setCheckState(Qt::Unchecked);
@@ -1486,7 +1486,7 @@ void Panel_UserPrivileges::UnselectAllSlot()
 	tab4CboxCreateTempTables->setCheckState(Qt::Unchecked);
 	tab4CboxLockTables->setCheckState(Qt::Unchecked);
 }
-void Panel_UserPrivileges::DeleteEntrySlot()
+void Panel_UserPrivileges::Delete_Entry_Slot()
 {
 	int currentRow = tableView->currentIndex().row(); //获取当前行
 	int currentRow1 = tab4TableView->currentIndex().row();
@@ -1496,14 +1496,14 @@ void Panel_UserPrivileges::DeleteEntrySlot()
 	int i = 0;
 	int numberOfColumns = 0;
 	int numberOfRows = 0; //行数
-	judgement = QueryUserHost(userHost, &numberOfColumns, &numberOfRows);
+	judgement = Query_User_Host(userHost, &numberOfColumns, &numberOfRows);
 	if (judgement == "OK")
 	{
 		QString userName = userHost.at(2 * currentRow);
 		QString host = userHost.at(2 * currentRow + 1);
-		judgement = QuerySchema(schemaList, userName, host, &numberOfRows);
+		judgement = Query_Schema(schemaList, userName, host, &numberOfRows);
 		QString schema = schemaList.at(currentRow1);
-		judgement = DeleteEntry(userName, host, schema);
+		judgement = Delete_Entry(userName, host, schema);
 		if (judgement == "OK")
 		{
 			QMessageBox::information(this, tr("Delete entry:"), tr("Delete entry successfully!"), QMessageBox::Ok);
@@ -1513,9 +1513,9 @@ void Panel_UserPrivileges::DeleteEntrySlot()
 	{
 		qDebug("ERROR!");
 	}
-	QuerySchemaSlot();
+	Query_Schema_Slot();
 }
-void Panel_UserPrivileges::RevokeSchemaPrivilegesSlot()
+void Panel_UserPrivileges::Revoke_Schema_Privileges_Slot()
 {
 	int currentRow = tableView->currentIndex().row(); //获取当前行
 	QString judgement;
@@ -1523,7 +1523,7 @@ void Panel_UserPrivileges::RevokeSchemaPrivilegesSlot()
 	int i = 0;
 	int numberOfColumns = 0;
 	int numberOfRows = 0; //行数
-	judgement = QueryUserHost(userHost, &numberOfColumns, &numberOfRows);
+	judgement = Query_User_Host(userHost, &numberOfColumns, &numberOfRows);
 	if (judgement == "OK")
 	{
 		QString userName = userHost.at(2 * currentRow);
@@ -1531,7 +1531,7 @@ void Panel_UserPrivileges::RevokeSchemaPrivilegesSlot()
 		switch (QMessageBox::warning(this, tr("Revoke All Privileges"), tr("Please confirm revokation of all privileges!"), QMessageBox::Ok | QMessageBox::Cancel))
 		{
 		case QMessageBox::Ok:
-			judgement = RevokeSchemaPrivileges(userName, host);
+			judgement = Revoke_Schema_Privileges(userName, host);
 			if (judgement == "OK")
 			{
 				QMessageBox::information(this, tr("Revoke All Privileges"), tr("Revoke all privileges successfully!"), QMessageBox::Ok);
@@ -1548,9 +1548,9 @@ void Panel_UserPrivileges::RevokeSchemaPrivilegesSlot()
 	{
 		qDebug("ERROR!");
 	}
-	QuerySchemaSlot();
+	Query_Schema_Slot();
 }
-void Panel_UserPrivileges::ShowSchemaPrivilegesSlot()
+void Panel_UserPrivileges::Show_Schema_Privileges_Slot()
 {
 	tab4PtnDeleteEntry->setEnabled(true);
 	tab4CboxSelect->setEnabled(true);
@@ -1581,18 +1581,18 @@ void Panel_UserPrivileges::ShowSchemaPrivilegesSlot()
 	QStringList schemaList; //获取当前用户所有Shema
 	int numberOfColumns = 0;
 	int numberOfRows = 0;
-	judgement = QueryUserHost(userHost, &numberOfColumns, &numberOfRows);
+	judgement = Query_User_Host(userHost, &numberOfColumns, &numberOfRows);
 
 	if (judgement == "OK")
 	{
 		QString userName = userHost.at(2 * currentRow);
 		QString host = userHost.at(2 * currentRow + 1);
-		judgement = QuerySchema(schemaList, userName, host, &numberOfRows);
+		judgement = Query_Schema(schemaList, userName, host, &numberOfRows);
 		QString schema = schemaList.at(currentRow1);
-		judgement = QueryShemaVariables(userName, host, schema);
+		judgement = Query_Shema_Variables(userName, host, schema);
 		if (judgement == "OK")
 		{
-			judgement = ShowSchemaPrivileges(schemaPriv);
+			judgement = Show_Schema_Privileges(schemaPriv);
 			if (judgement == "OK")
 			{
 				QString selectPriv = schemaPriv.at(0);
@@ -1614,7 +1614,7 @@ void Panel_UserPrivileges::ShowSchemaPrivilegesSlot()
 				QString executePriv = schemaPriv.at(16);
 				QString eventPriv = schemaPriv.at(17);
 				QString triggerPriv = schemaPriv.at(18);
-				UnselectAllSlot();
+				Unselect_All_Slot();
 				if (selectPriv == "Y")
 				{
 					tab4CboxSelect->setCheckState(Qt::Checked);
@@ -1699,9 +1699,9 @@ void Panel_UserPrivileges::ShowSchemaPrivilegesSlot()
 		qDebug("ERROR!");
 	}
 }
-void Panel_UserPrivileges::RevertSchemaSlot()
+void Panel_UserPrivileges::Revert_Schema_Slot()
 {
-	UnselectAllSlot();
+	Unselect_All_Slot();
 	tab4CboxSelect->setEnabled(false);
 	tab4CboxInsert->setEnabled(false);
 	tab4CboxUpdate->setEnabled(false);

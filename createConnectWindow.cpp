@@ -158,7 +158,12 @@ void createConnectWindow::saveOptions()
     char buffer[256];
     QStringList messageList;
     
-    std::ifstream fp("/Users/vaaaas/Documents/Program/QT/Workbench/Connections");
+    QString dir = QDir::currentPath();
+    std::string strDir((const char *)dir.toLocal8Bit());
+    
+    std::string ConnDir=strDir+"/Connections";
+    
+    std::ifstream fp(ConnDir);
     if(!fp.is_open()){
         std::cout<<"Error opening file Connections";
         exit(1);
@@ -187,7 +192,7 @@ void createConnectWindow::saveOptions()
     //!!!!!!!!
     //ofstream saveFile("/Users/vaaaas/Documents/Program/QT/Workbench/Connections");
     std::ofstream saveFile;
-    saveFile.open("/Users/vaaaas/Documents/Program/QT/Workbench/Connections",std::ios::out|std::ios::ate|std::ios::app);
+    saveFile.open(ConnDir,std::ios::out|std::ios::ate|std::ios::app);
     if(saveFile.is_open())
     {
         saveFile<<nowConnName;

@@ -18,6 +18,7 @@ MyHighLighter::MyHighLighter(QTextDocument *parent)
                     << "\\bALTER\\b" << "\\bAT\\b" << "\\bCOLUMN\\b"
                     << "\\bCONNECT\\b" << "\\bDROP\\b" << "\\bEXECUTE\\b"
                     << "\\bFLOAT\\b" << "\\bINT\\b";
+    //(?<!\\)(\"|\').*?(?<!\\)\1
     foreach (const QString &pattern, keywordPatterns) {
         rule.pattern = QRegExp(pattern);
         rule.format = keywordFormat;
@@ -45,6 +46,21 @@ MyHighLighter::MyHighLighter(QTextDocument *parent)
     functionFormat.setForeground(Qt::blue);
     rule.pattern = QRegExp("\\b[A-Za-z0-9_]+(?=\\()");
     rule.format = functionFormat;
+    highlightingRules.append(rule);
+    
+    oneStringFormat.setForeground(Qt::green);
+    rule.pattern = QRegExp("\'[^\']*\'");
+    rule.format = oneStringFormat;
+    highlightingRules.append(rule);
+    
+    twoStringFormat.setForeground(Qt::darkYellow);
+    rule.pattern = QRegExp("\"[^\"]*\"");
+    rule.format = twoStringFormat;
+    highlightingRules.append(rule);
+    
+    dotStringFormat.setForeground(Qt::darkYellow);
+    rule.pattern = QRegExp("\`[^\`]*\`");
+    rule.format = dotStringFormat;
     highlightingRules.append(rule);
 
     commentStartExpression = QRegExp("/\\*");

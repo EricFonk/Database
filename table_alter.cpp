@@ -12,38 +12,41 @@
 TableAlt::TableAlt()
 {
 	onInsertFlag = 0;
+	_allTabOpts = new QTabWidget();
+	_alterCols = new QWidget();
 	//初始化数据类型下拉列表
 	QComboBox *datatype = new QComboBox();
 	QStringList datalist;//数据类型列表
 	datalist<<"int"<<"varchar(45)"<<"char(45)"<<"float"<<"double"<<"boolean"<<"tinyint"<<"smallint"<<"bigint"<<"tinyint"<<"datetime";
 	datatype->addItems(datalist);
 	//设置表格行列
-	tableOpt = new QTableWidget(this);
-	tableOpt->setColumnCount(9);
+	tableOpt = new QTableWidget();
+	tableOpt->setColumnCount(10);
 	tableOpt->setRowCount(1);
 	//设置表头
 	QStringList headers;
-	headers<<"column name"<<"datatype"<<"PK"<<"NN"<<"UQ"<<"BIN"<<"UN"<<"AI"<<"default";
+	headers<<"column name"<<"datatype"<<"PK"<<"US"<<"UQ"<<"ZF"<<"NN"<<"BIN"<<"AI"<<"default";
 	tableOpt->setHorizontalHeaderLabels(headers);
 	//添加下拉框
 	tableOpt->setCellWidget(0,1,datatype);
-	for(int i=2;i<8;i++)
+	for (int i = 2; i < 9; i++)
 	{
 		QTableWidgetItem *check = new QTableWidgetItem();
-		check->setCheckState(Qt::Unchecked);	
-		tableOpt->setItem(0,i,check);
+		check->setCheckState(Qt::Unchecked);
+		tableOpt->setItem(0, i, check);
 	}
-	newTableName = new QLineEdit(this);//新表名输入框
+	//这里应该有查询表结构的语句
+	newTableName = new QLineEdit();//新表名输入框
 	newTableName->setPlaceholderText("");
-	QLabel *tableName = new QLabel(tr("table name"),this);
-	QLabel *dbLabel = new QLabel(tr("Schema"),this);
-	dbNameLabel = new QLabel(dbName,this);//所属模式名
-	QPushButton *addColumnBtn = new QPushButton(tr("+"),this);
-	QPushButton *dropColumnBtn = new QPushButton(tr("-"),this);
-	QPushButton *cfmAddColBtn = new QPushButton(tr("confirm add column"),this);
-	QPushButton *applyBtn = new QPushButton(tr("apply alter"),this);//提交按钮
+	QLabel *tableName = new QLabel(tr("table name"));
+	QLabel *dbLabel = new QLabel(tr("Schema"));
+	dbNameLabel = new QLabel(dbName);//所属模式名
+	QPushButton *addColumnBtn = new QPushButton(tr("+"));
+	QPushButton *dropColumnBtn = new QPushButton(tr("-"));
+	QPushButton *cfmAddColBtn = new QPushButton(tr("confirm add column"));
+	QPushButton *applyBtn = new QPushButton(tr("apply alter"));//提交按钮
 	QPushButton *refreshBtn = new QPushButton(tr("refresh the columns setting"));
-	QVBoxLayout *mainLayout = new QVBoxLayout(this);
+	QVBoxLayout *mainLayout = new QVBoxLayout();
 
 	mainLayout->addWidget(tableOpt);
 	mainLayout->addWidget(addColumnBtn);
@@ -55,24 +58,33 @@ TableAlt::TableAlt()
 	mainLayout->addWidget(dbNameLabel);
 	mainLayout->addWidget(applyBtn);
 	mainLayout->addWidget(refreshBtn);
-	this->setLayout(mainLayout); 	
+	_alterCols->setLayout(mainLayout); 	
+
+	_alterFK = new Widget_ForeignKey();
+
+	_allTabOpts->addTab(_alterCols,"Columns");
+	_allTabOpts->addTab(_alterFK,"Foreign Keys");
+	QHBoxLayout *layout = new QHBoxLayout();
+	layout->addWidget(_allTabOpts);
+	this->setLayout(layout);
+
 	//connect(insertBtn, static_cast<void(QPushButton::*)(bool)>(&QPushButton::clicked), 
-	//	this, static_cast<void(TableCrtAlt::*)(bool)>(&TableCrtAlt::ApplyCreate));
-	connect(applyBtn,SIGNAL(clicked(bool)),this,SLOT(ApplyAlter(bool)));
-	connect(dropColumnBtn,SIGNAL(clicked()),this,SLOT(DropCol()));
-	connect(addColumnBtn,SIGNAL(clicked()),this,SLOT(InsertCol()));
-	connect(cfmAddColBtn,SIGNAL(clicked()),this,SLOT(ConfirmInsertCol()));
-	connect(refreshBtn,SIGNAL(clicked()),this,SLOT(RefreshAllInfo()));
-	//connect(tableOpt->model(),SIGNAL(modelDataChanged(const QModelIndex &topLeft, QModelIndex &buttomRight)),this,SLOT(OnDataChange(const QModelIndex &topLeft, QModelIndex &buttomRight)));
+	//	this, static_cast<void(TableCrtAlt::*)(bool)>(&TableCrtAlt::applyCreate));
+	connect(applyBtn,SIGNAL(clicked(bool)),this,SLOT(applyAlter(bool)));
+	connect(dropColumnBtn,SIGNAL(clicked()), this,SLOT(dropCol()));
+	connect(addColumnBtn,SIGNAL(clicked()), this,SLOT(insertCol()));
+	connect(cfmAddColBtn,SIGNAL(clicked()), this,SLOT(confirmInsertCol()));
+	connect(refreshBtn,SIGNAL(clicked()), this,SLOT(refreshAllInfo()));
+	//connect(tableOpt->model(),SIGNAL(modelDataChanged(const QModelIndex &topLeft, QModelIndex &buttomRight)),this,SLOT(onDataChange(const QModelIndex &topLeft, QModelIndex &buttomRight)));
 }
 
-void TableAlt::SetDTName(QString dbname,QString tname)
+void TableAlt::setDTName(QString dbname,QString tname)
 {
     this->dbName = dbname;
     this->tName = tname;
 }
 
-void TableAlt::LoadTableInfo()
+void TableAlt::loadTableInfo()
 {
 	newTableName->setText(tName);
 	dbNameLabel->setText(dbName);
@@ -87,14 +99,14 @@ void TableAlt::LoadTableInfo()
 		col_extra.clear();
 		//特殊状态归零
 		onInsertFlag = 0;
-		GetTableAllCols(tName,col_name,col_default,col_isNull,col_type,col_key,col_extra,col_uni);
+		getTableAllCols(dbName,tName,col_name,col_default,col_isNull,col_type,col_key,col_extra,col_uni,col_unsign,col_zero);
 		columns_num = col_name.length();
 		tableOpt->setRowCount(columns_num);
 	}
 	else
 	{
 		//第一次初始化需要加载视图
-		GetTableAllCols(tName,col_name,col_default,col_isNull,col_type,col_key,col_extra,col_uni);
+		getTableAllCols(dbName,tName,col_name,col_default,col_isNull,col_type,col_key,col_extra,col_uni,col_unsign,col_zero);
 		columns_num = col_name.length();
 		tableOpt->setRowCount(columns_num);
 		//动态数组定义问题？？？
@@ -108,18 +120,33 @@ void TableAlt::LoadTableInfo()
 		for(int i=0;i<columns_num;i++)
 		{
 			tableOpt->setItem(i,0,new QTableWidgetItem(col_name[i]));
-			tableOpt->setItem(i,8,new QTableWidgetItem(col_default[i]));
+			tableOpt->setItem(i,9,new QTableWidgetItem(col_default[i]));
 			//初始化下拉列表
 			QComboBox *tempDataType = new QComboBox;
-			tempDataType->addItems(datalist);
-			tempDataType->setCurrentText(col_type[i]);
+			//tempDataType->addItems(datalist);
+			//tempDataType->setCurrentText(col_type[i]);
+			tempDataType->addItem(col_type[i]); //修改bug,date:20160908
+			tempDataType->addItems(datalist);//修改bug,date:20160908,还应该考虑datatype用户自定义
+
 			tableOpt->setCellWidget(i,1,tempDataType);
 
-			QTableWidgetItem *tempcheck3 = new QTableWidgetItem();
-			QTableWidgetItem *tempcheck2 = new QTableWidgetItem();
-			QTableWidgetItem *tempcheck7 = new QTableWidgetItem();
-			
-			if(col_isNull[i].compare("NO")==0)
+			QTableWidgetItem *tempcheck2 = new QTableWidgetItem();//pirmary_key
+			QTableWidgetItem *tempcheck3 = new QTableWidgetItem();//unsigned
+			QTableWidgetItem *tempcheck4 = new QTableWidgetItem();//unique
+			QTableWidgetItem *tempcheck5 = new QTableWidgetItem();//zerofill
+			QTableWidgetItem *tempcheck6 = new QTableWidgetItem();//notnull
+			QTableWidgetItem *tempcheck7 = new QTableWidgetItem();//binary
+			QTableWidgetItem *tempcheck8 = new QTableWidgetItem();//auto_increment
+
+			if (col_key[i].compare("PRI") == 0)
+			{
+				tempcheck2->setCheckState(Qt::Checked);
+			}
+			else
+			{
+				tempcheck2->setCheckState(Qt::Unchecked);
+			}
+			if(col_unsign[i].compare("unsigned")==0)
 			{	
 				tempcheck3->setCheckState(Qt::Checked);
 			}
@@ -127,40 +154,73 @@ void TableAlt::LoadTableInfo()
 			{
 				tempcheck3->setCheckState(Qt::Unchecked);
 			}
-			if(col_key[i].compare("PRI")==0)
+			if(col_key[i].compare("UNI")==0)
 			{
-				tempcheck2->setCheckState(Qt::Checked);	
+				tempcheck4->setCheckState(Qt::Checked);	
 			}
 			else
 			{
-				tempcheck2->setCheckState(Qt::Unchecked);
+				tempcheck4->setCheckState(Qt::Unchecked);
 			}
-			if(col_extra[i].compare("auto_increment")==0)
+			if (col_zero[i].compare("zerofill") == 0)
+			{
+				tempcheck5->setCheckState(Qt::Checked);
+			}
+			else
+			{
+				tempcheck5->setCheckState(Qt::Unchecked);
+			}
+			if (col_isNull[i].compare("NO") == 0)
+			{
+				tempcheck6->setCheckState(Qt::Checked);
+			}
+			else
+			{
+				tempcheck6->setCheckState(Qt::Unchecked);
+			}
+			/*if(col_zero[i].compare("Binary")==0)
 			{
 				tempcheck7->setCheckState(Qt::Checked);	
 			}	
 			else
 			{
 				tempcheck7->setCheckState(Qt::Unchecked);
+			}*/
+			if (col_extra[i].compare("auto_increment") == 0)
+			{
+				tempcheck8->setCheckState(Qt::Checked);
+			}
+			else
+			{
+				tempcheck8->setCheckState(Qt::Unchecked);
 			}
 
+			tableOpt->setItem(i, 2, tempcheck2); 
 			tableOpt->setItem(i,3,tempcheck3);
-			tableOpt->setItem(i,2,tempcheck2);
-			tableOpt->setItem(i,7,tempcheck7);			
+			tableOpt->setItem(i, 4, tempcheck4);
+			tableOpt->setItem(i, 5, tempcheck5);
+			tableOpt->setItem(i, 6, tempcheck6);
+			tableOpt->setItem(i,7,tempcheck7);	
+			tableOpt->setItem(i, 8, tempcheck8);
 			//this->tableOpt->setItem(i,4,tempcheck);
 		}
 	}
+	//同时刷新外键表
+	_alterFK->LoadRefTable(dbName,tName, col_name);
 }
 
-void TableAlt::OnDataChange(const QModelIndex &topLeft, QModelIndex &buttomRight)
+void TableAlt::onDataChange(const QModelIndex &topLeft, QModelIndex &buttomRight)
 {
     qDebug("alter hhhhhhhhhhhhhhhhhhhhhhhhhhhhhh!");
 }
 
-void TableAlt::ApplyAlter(bool param)
+void TableAlt::applyAlter(bool param)
 {
 	QString new_col_name;
 	QString new_col_default;
+	QString new_col_unsign;
+	QString new_col_uni;
+	QString new_col_zerofill;
 	QString new_col_isNull;
 	QString new_col_type;
 	QString new_col_key;
@@ -171,22 +231,32 @@ void TableAlt::ApplyAlter(bool param)
 	QStringList tarColNum;
 	
 	int new_col_num;
-	int flag_hasAlterItem;
+	int flag_hasAlterItem=false;
 	new_col_num = this->tableOpt->rowCount();
 
 	//初始化onequery
-	alterQuery = "alter table "+tName+" ";
+	alterQuery = "alter table `"+tName+"` ";
 
 	for(int i=0;i<columns_num;i++)
-	{
-		flag_hasAlterItem=false;
+	{	
+		//每次循环前需要初始化条件
+		new_col_name = "";
+		new_col_type = "";
+		pkQuery = "";
+		new_col_unsign = "";
+		new_col_zerofill = "";
+		new_col_isNull = "";
+		new_col_extra = "";
+		new_col_default = "";
+		//flag_hasAlterItem=false;
 		//oneQuery += " ";
-		for(int j=0;j<8;j++)
+		for(int j=0;j<9;j++)
 		{	
-			pkQuery = "";
+			//pkQuery = "";
 			if(tableOpt->item(i,0)->text()==NULL||tableOpt->item(i,0)->text().compare("")==0)
 			{
 				//给出不能为空的错误提示
+				//列名不能为空
 				QMessageBox::information(this,"ERROR","Column must has a Name !");
 			}
 			else
@@ -226,6 +296,40 @@ void TableAlt::ApplyAlter(bool param)
 					}
 					break;
 				case 3:
+					//去掉unsigned约束
+					if ((this->tableOpt->item(i, j)->checkState() != Qt::Checked) && (col_unsign[i].compare("unsigned") == 0))
+					{
+						flag_hasAlterItem = true;
+						new_col_unsign = "";
+					}
+					//添加unsigned约束
+					if ((this->tableOpt->item(i, j)->checkState() == Qt::Checked) && (col_unsign[i].compare("unsigned") != 0))
+					{
+						int temp = this->tableOpt->item(i, j)->checkState();
+						qDebug("%d", temp);
+						flag_hasAlterItem = true;
+						new_col_unsign = "UNSIGNED";
+					}
+					break;
+					//unique index 暂未解决
+				//case 4:
+				case 5:
+					//去掉zerofill约束
+					if ((this->tableOpt->item(i, j)->checkState() != Qt::Checked) && (col_zero[i].compare("zerofill") == 0))
+					{
+						flag_hasAlterItem = true;
+						new_col_zerofill = "";
+					}
+					//添加unsigned约束
+					if ((this->tableOpt->item(i, j)->checkState() == Qt::Checked) && (col_zero[i].compare("zerofill") != 0))
+					{
+						int temp = this->tableOpt->item(i, j)->checkState();
+						qDebug("%d", temp);
+						flag_hasAlterItem = true;
+						new_col_zerofill = "ZEROFILL";
+					}
+					break;
+				case 6:
 					//去掉非空约束
 					if((this->tableOpt->item(i,j)->checkState()!=Qt::Checked)&&(col_isNull[i].compare("NO")==0))
 					{
@@ -241,18 +345,34 @@ void TableAlt::ApplyAlter(bool param)
 						new_col_isNull = "NOT NULL";
 					}
 					break;
-				case 7:
+					//binary 暂未解决
+				//case 7:
+				case 8:
 					//删除自增约束
 					if((this->tableOpt->item(i,j)->checkState()!=Qt::Checked)&&(col_extra[i].compare("auto_increment")==0))
 					{
 						flag_hasAlterItem = true;
-						new_col_extra = " ";
+						new_col_extra = "";
 					}
 					//添加自增约束
 					if((this->tableOpt->item(i,j)->checkState()==Qt::Checked)&&(col_extra[i].compare("auto_increment")!=0))
 					{
 						flag_hasAlterItem = true;
 						new_col_extra = "AUTO_INCREMENT";
+					}
+					break;
+				case 9:
+					//删除默认约束
+					if (this->tableOpt->item(i,j)!=NULL&&this->tableOpt->item(i, j)->text() != col_default[i])
+					{
+						flag_hasAlterItem = true;
+						new_col_default = "DEFAULT "+ this->tableOpt->item(i, j)->text();
+					}
+					//添加默认约束
+					if ((this->tableOpt->item(i, j)==NULL) && col_default[i]!=NULL)
+					{
+						flag_hasAlterItem = true;
+						new_col_default = "";
 					}
 					break;
 				}
@@ -264,7 +384,7 @@ void TableAlt::ApplyAlter(bool param)
 			//将行号加入有改动的行list
 			tarColNum<<""+i;
 			//把关于一行的修改sql语句组装起来	
-			oneQuery.push_back("CHANGE `"+col_name[i]+"` `"+new_col_name+"` "+new_col_type+" "+new_col_isNull+" "+new_col_extra);								
+			oneQuery.push_back("CHANGE `"+col_name[i]+"` `"+new_col_name+"`"+new_col_type+new_col_unsign+new_col_zerofill+new_col_isNull+new_col_extra+new_col_default+pkQuery);								
 		}
 		//this->tableOpt->indexAt();
 	}
@@ -287,14 +407,17 @@ void TableAlt::ApplyAlter(bool param)
 			alterQuery += oneQuery[i];	
 		}
 		//直接组装好语句还是设置好参数调用函数
-		string flag = ExecuteWithQuery(0,alterQuery+";");
+		double timestamp=0;
+		long affectedRows;
+		alterQuery = alterQuery + ";";
+		string flag = executeWithQuery(0,alterQuery+";",timestamp,affectedRows);
 
 		if(flag.compare("success")==0)
 		{
 			//数据库操作成功后 对逻辑模型数据进行更新
-			ConfirmLatestUpdateOperation();
+			confirmLatestUpdateOperation();
 			QMessageBox::information(this,"Infomation","Update columns infomation SUCCESS!");
-			//UpdateAllInfoAfter(tarColNum,2);
+			//updateAllInfoAfter(tarColNum,2);
 		}
 		else
 		{
@@ -309,13 +432,13 @@ void TableAlt::ApplyAlter(bool param)
 }
 
 //修改表名
-void TableAlt::RenameTable()
+void TableAlt::renameTable()
 {
 	//获取旧表名和新表名 调用修改表名函数
 	QString new_TName;
 	QString flag;
 	new_TName = this->newTableName->text();
-	flag = AlterTableRenameTable(tName,new_TName);
+	flag = AlterTable_RenameTable(tName,new_TName);
 	if(flag.compare("OK")!=0)
 	{
 		//数据库操作成功后 对逻辑模型数据更新
@@ -330,7 +453,7 @@ void TableAlt::RenameTable()
 
 //修改
 
-void TableAlt::InsertCol()
+void TableAlt::insertCol()
 {
     //获取列信息 调用增列函数 返回提示信息
     QString new_colName;
@@ -370,6 +493,7 @@ void TableAlt::InsertCol()
     qDebug(this->tableOpt->rowCount()+"");
     //加入数据类型下拉框
     tableOpt->setCellWidget((this->tableOpt->rowCount()-1),1,datatype);
+	
     //循环加入单选框 必须是局部的变量？
     for(int i=2;i<8;i++)
     {
@@ -379,7 +503,7 @@ void TableAlt::InsertCol()
     }
 }
 
-void TableAlt::ConfirmInsertCol()
+void TableAlt::confirmInsertCol()
 {
 	QStringList allColNames,allColTypes,allColOpts,allPkSets;
 	QStringList allPkOpts,allIndexOpts;//主键约束（只有列名）索引约束（只有列名）
@@ -448,8 +572,8 @@ void TableAlt::ConfirmInsertCol()
 			allColOpts<<oneOpt;		
 		}
 		//进行数据库改表操作
-		QString resFlag = AlterTableAddColumns(dbName,tName,allColNames,allColTypes,allColOpts,allPkOpts,allIndexOpts);
-		//解除旧列锁定
+		QString resFlag = AlterTable_AddColumns(dbName,tName,allColNames,allColTypes,allColOpts,allPkOpts,allIndexOpts);
+		//解除旧列锁定(不用判断就列是否为0 不存在没有列的表)
 		for(int i=0;i<this->tableOpt->rowCount();i++)
 		{
 			for(int j=0;j<this->tableOpt->columnCount();j++)
@@ -469,21 +593,23 @@ void TableAlt::ConfirmInsertCol()
 		if(resFlag.compare("success")==0)
 		{
 			//数据库操作成功后 对逻辑模型数据进行更新
-			ConfirmLatestAddOperation(endLine);
+			confirmLatestAddOperation(endLine);
 			QMessageBox::information(this,"Infomation","Add new columns SUCCESS!");
-			//UpdateAllInfoAfter(tarColNum,0);
+			//updateAllInfoAfter(tarColNum,0);
 		}
 		else
 		{
+
 			//需要回滚增列操作吗？
 			//打印错误信息
-			//RollBackLatestAddOperation(startLine,endLine);
+			//rollBackLatestAddOperation(startLine,endLine);
 			QMessageBox::information(this,"Add Column Failed!","Please check all items");
+			this->tableOpt->removeRow(this->tableOpt->currentRow());
 		}
 	}
 }
 
-void TableAlt::DropCol()
+void TableAlt::dropCol()
 {
 	//获取列名 调用删列函数 返回提示信息
 	QString drop_colName;
@@ -501,27 +627,36 @@ void TableAlt::DropCol()
 	else
 	{
 		tarColNum<<""+this->tableOpt->currentRow();
-		drop_colName = this->tableOpt->item(this->tableOpt->currentRow(),0)->text();
-		flag = AlterTableDropColumn(dbName,tName,drop_colName);
-		if(flag.compare("OK")!=0)
+		int a = this->tableOpt->currentRow();
+		int b = this->tableOpt->rowCount();
+		if (a<1|| a>b)
 		{
-			//删除不需要回退
-		//	RollBackLatestDropOperation(this->tableOpt->currentRow());
-			QMessageBox::information(this,"Drop Column Failed!",flag);
+			QMessageBox::information(this, "Warning!", " Please select a line to delete!");
 		}
 		else
 		{
-			QMessageBox::information(this,"Drop Column Success!","Please refresh table");
-			//onInsertFlag=3;
-			//数据库操作成功后 对逻辑模型数据进行更新
-			ConfirmLatestDropOperation(this->tableOpt->currentRow());
-			//UpdateAllInfoAfter(tarColNum,1);
+			drop_colName = this->tableOpt->item(this->tableOpt->currentRow(),0)->text();
+			flag = AlterTable_DropColumn(dbName, tName, drop_colName);
+			if (flag.compare("OK") != 0)
+			{
+				//删除不需要回退
+			//	rollBackLatestDropOperation(this->tableOpt->currentRow());
+				QMessageBox::information(this, "Drop Column Failed!", flag);
+			}
+			else
+			{
+				QMessageBox::information(this, "Drop Column Success!", "Please refresh table");
+				//onInsertFlag=3;
+				//数据库操作成功后 对逻辑模型数据进行更新
+				confirmLatestDropOperation(this->tableOpt->currentRow());
+				//updateAllInfoAfter(tarColNum,1);
+			}
 		}
 	}
 }
 
 ////更新tablealt中的原数据（上一次操作后的数据） 以便在更改时判断那些列被更改了
-//void TableAlt::UpdateAllInfoAfter(QStringList colNumList,int optType)
+//void TableAlt::updateAllInfoAfter(QStringList colNumList,int optType)
 //{
 //	int oldColSum,newColSum;
 //
@@ -630,7 +765,7 @@ TableAlt::~TableAlt()
 
 //因为用户对视图进行了修改而数据库修改失败 所以需要将视图上的修改进行回退
 //回退增列操作
-void TableAlt::RollBackLatestAddOperation(int oldColSum, int newColSum)
+void TableAlt::rollBackLatestAddOperation(int oldColSum, int newColSum)
 {
 	//将从修改前总列数至修改后总列数之间的列去掉
 	for(int i=oldColSum;i<newColSum;i++)
@@ -644,7 +779,7 @@ void TableAlt::RollBackLatestAddOperation(int oldColSum, int newColSum)
 }
 
 //回退删列操作 不需要
-//void TableAlt::RollBackLatestDropOperation(int tarColNum)
+//void TableAlt::rollBackLatestDropOperation(int tarColNum)
 //{
 //	//将目标行添加回原位置(位置参数由零开始)
 //	this->tableOpt->insertRow(tarColNum);
@@ -680,7 +815,7 @@ void TableAlt::RollBackLatestAddOperation(int oldColSum, int newColSum)
 //
 //}
 //回退列信息修改操作
-void TableAlt::RollBackLatestUpdateOperation()
+void TableAlt::rollBackLatestUpdateOperation()
 {
 	int i,j;
 	for(i=0;i<columns_num;i++)
@@ -717,7 +852,7 @@ void TableAlt::RollBackLatestUpdateOperation()
 }
 //因为用户对数据库修改成功之后 逻辑模型中的数据还是修改之前的 所以需要进行更新 以便进行继续的修改
 //插入列操作之后向逻辑模型中添加
-void TableAlt::ConfirmLatestAddOperation(int newColSum)
+void TableAlt::confirmLatestAddOperation(int newColSum)
 {
 	//先保存旧行数 再对行数属性更新！！！
 	int oldColSum = this->columns_num;
@@ -773,11 +908,10 @@ void TableAlt::ConfirmLatestAddOperation(int newColSum)
 		{
 			this->col_default<<"";
 		}
-
 	}
 }
 //在数据库完成删列操作成功后 同时对视图进行删除 以及对逻辑模型数据进行删除 与增列和修改列信息有所区别
-void TableAlt::ConfirmLatestDropOperation(int tarColNum)
+void TableAlt::confirmLatestDropOperation(int tarColNum)
 {
 	this->columns_num --;
 	//视图删除
@@ -796,7 +930,7 @@ void TableAlt::ConfirmLatestDropOperation(int tarColNum)
 	col_key.removeAt(tarColNum);
 }
 //在数据库更新成功之后 修改列信息操作已在视图上完成 需要对逻辑模型数据进行更新
-void TableAlt::ConfirmLatestUpdateOperation()
+void TableAlt::confirmLatestUpdateOperation()
 {
 	int i=0;
 	int j=0;
@@ -853,7 +987,7 @@ void TableAlt::ConfirmLatestUpdateOperation()
 	}
 }
 
-void TableAlt::RefreshAllInfo()
+void TableAlt::refreshAllInfo()
 {
 	int i;
 	if(this->onInsertFlag==1)
@@ -875,7 +1009,7 @@ void TableAlt::RefreshAllInfo()
 			col_extra.clear();
 			col_uni.clear();
 			//不止视图需要刷新 数据模型一样需要更新
-			GetTableAllCols(tName,col_name,col_default,col_isNull,col_type,col_key,col_extra,col_uni);
+			getTableAllCols(dbName,tName,col_name,col_default,col_isNull,col_type,col_key,col_extra,col_uni,col_unsign,col_zero);
 			columns_num = col_name.length();
 			tableOpt->setRowCount(columns_num);
 			for(int i=0;i<columns_num;i++)

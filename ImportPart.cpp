@@ -20,12 +20,12 @@
 #include "qtextstream.h"
 #include "export_and_import.h"
 #include "qobject.h"
+#include "mysqlQuery.h"
 
 #pragma comment(lib,"libmysql.lib")
 #pragma comment(lib,"wsock32.lib")
 
-QString ImportPassword = "63026302";
-MYSQL Import_Mysql;
+
 ImportPart::ImportPart()
 {
 	//导入地址
@@ -33,7 +33,7 @@ ImportPart::ImportPart()
 	Label_FilePath = new QLabel(tr("File Path:"));
 	Label_FilePath->setStyleSheet("font:bold;font-size:12px");//字体加粗
 	LineEdit_FilePath = new QLineEdit();
-	LineEdit_FilePath->setFixedWidth(700);
+	//LineEdit_FilePath->setFixedWidth(700);
 	PushButton_FileChosen = new QPushButton(tr("..."));
 	PushButton_FileChosen->setStyleSheet("font:bold");
 	FirstLayout->addWidget(Label_FilePath);
@@ -49,11 +49,11 @@ ImportPart::ImportPart()
 	Label_ImportDes->setStyleSheet("font:bold;font-size:12px");
 	ComboBox_ImportDes = new QComboBox();
 	ComboBox_ImportDes->addItem(" ");
-	ComboBox_ImportDes->setFixedWidth(500);
+	//ComboBox_ImportDes->setFixedWidth(500);
 	Label_NewImprtDes = new QLabel(tr("New Import Destination:"));
 	Label_NewImprtDes->setStyleSheet("font:bold;font-size:12px");
 	LineEdit_NewImportDes = new QLineEdit();
-	LineEdit_NewImportDes->setFixedWidth(250);
+	//LineEdit_NewImportDes->setFixedWidth(250);
 	SecondLayout->addWidget(Label_ImportDes);
 	SecondLayout->addWidget(ComboBox_ImportDes);
 	SecondLayout->addStretch(2);
@@ -88,6 +88,7 @@ ImportPart::ImportPart()
 	ImportLayout->addLayout(FourthLayout);
 	WholeImport->setLayout(ImportLayout);
 
+	ConnectDatabase();
 	ComboBoxImportDesInit();
 
 	connect(ComboBox_ImportDes, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(SetImportDes()));
@@ -96,17 +97,21 @@ ImportPart::ImportPart()
 }
 bool ImportPart::ImportConnectSQL()
 {
-	mysql_init(&Import_Mysql);
+	/*mysql_init(&Import_Mysql);
 	if (!mysql_real_connect(&Import_Mysql, "localhost", "root", ImportPassword.toStdString().c_str(), "", 3306, NULL, 0))
 	{
 		QMessageBox::warning(this, tr("Warning!"), mysql_error(&Import_Mysql), QMessageBox::Ok);
 		return false;
 	}
+	return true;*/
 	return true;
 }
 void ImportPart::ComboBoxImportDesInit()
 {
-	MYSQL_RES *result;
+	QStringList databasename;
+	GetAllDatabases(databasename);
+	ComboBox_ImportDes->addItems(databasename);
+	/*MYSQL_RES *result;
 	int res;
 	if (ImportConnectSQL() == false)
 	{
@@ -134,7 +139,7 @@ void ImportPart::ComboBoxImportDesInit()
 		}
 	}
 	mysql_free_result(result);
-	mysql_close(&Import_Mysql);
+	mysql_close(&Import_Mysql);*/
 }
 void ImportPart::ImportPath()
 {
@@ -173,6 +178,7 @@ void ImportPart::Import()
 	QString UseDatabaseSql;
 	QString Sql;
 	QString ImportDatabase;
+	QString Tip;
 	int res;
 	bool flag = true;
 	int pos = 0;
@@ -185,19 +191,19 @@ void ImportPart::Import()
 	log->setHorizontalHeaderLabels(log_head);
 	if (ImportConnectSQL() == true)
 	{
-		if (ComboBox_ImportDes->currentText() == "")
+		if (ComboBox_ImportDes->currentText() == " ")
 		{
 			ImportDatabase = LineEdit_NewImportDes->text();
-			UseDatabaseSql = "use " + ImportDatabase + " ; ";
+			CreateDBTest(ImportDatabase);
+			UseOneOfDB(ImportDatabase);
+			/*UseDatabaseSql = "use " + ImportDatabase + " ; ";
 			CreateDatabaseSql = "create database " + ImportDatabase + " ; ";
-			mysql_query(&Import_Mysql, CreateDatabaseSql.toStdString().c_str());
-			mysql_query(&Import_Mysql, UseDatabaseSql.toStdString().c_str());
+			mysql_query(&Import_Mysql, UseDatabaseSql.toStdString().c_str());*/
 			LineEdit_NewImportDes->setText("");
 		}
 		else
 		{
-			UseDatabaseSql = "use " + ImportDatabase + " ; ";
-			mysql_query(&Import_Mysql, UseDatabaseSql.toStdString().c_str());
+			UseOneOfDB(ImportDatabase);
 		}
 		QFile file(LineEdit_FilePath->text());
 		if (!file.open(QIODevice::ReadOnly)) {
@@ -218,11 +224,10 @@ void ImportPart::Import()
 				Sql.append(lineString);
 				if (pos != 0 && pos != -1)
 				{
-					mysql_query(&Import_Mysql, "set names gbk");
-					if (mysql_query(&Import_Mysql, Sql.toStdString().c_str())) {
+					if (ImportDatabaseByOne(Sql, Tip) == false) {
 						log->setItem(i, 0, new QStandardItem(Sql));
 						log->setItem(i, 1, new QStandardItem("Failed!"));
-						log->setItem(i, 2, new QStandardItem(mysql_error(&Import_Mysql)));
+						log->setItem(i, 2, new QStandardItem(Tip));
 						flag = false;
 						Sql = "";
 						i++;
@@ -243,7 +248,6 @@ void ImportPart::Import()
 		TableView_Show->setColumnWidth(0, 500);
 		TableView_Show->setColumnWidth(1, 100);
 		TableView_Show->setColumnWidth(2, 431);
-		mysql_close(&Import_Mysql);//断开连接
 		if (flag == true)
 		{
 			QMessageBox::information(this, tr("OK!!"), "Import Successful!", QMessageBox::Ok);

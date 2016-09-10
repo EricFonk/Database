@@ -25,6 +25,9 @@ private:
     QRegExp commentEndExpression;
 
     QTextCharFormat keywordFormat;
+    QTextCharFormat oneStringFormat;
+    QTextCharFormat twoStringFormat;
+    QTextCharFormat dotStringFormat;
     QTextCharFormat classFormat;
     QTextCharFormat singleLineKey;
     QTextCharFormat singleLineValue;

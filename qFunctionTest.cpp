@@ -9,7 +9,7 @@
 #include "qFunctionTest.h"
 #include "mysqlQuery.h"
 
-QFunctionTest::QFunctionTest()
+qFunctionTest::qFunctionTest()
 {
     QPushButton *pushButton = new QPushButton(tr("apply new function"),this);
     pushButton->setGeometry(QRect(70,40,75,23));
@@ -26,17 +26,17 @@ QFunctionTest::QFunctionTest()
     mainLayout->addWidget(alterButton);
     this->setLayout(mainLayout);
     
-    connect(pushButton,SIGNAL(clicked()),this,SLOT(ApplyFunction()));
+    connect(pushButton,SIGNAL(clicked()),this,SLOT(applyFunction()));
     connect(dropButton,SIGNAL(clicked()),this,SLOT(dropFunction()));
-    connect(alterButton,SIGNAL(clicked()),this,SLOT(AlterFunction()));
+    connect(alterButton,SIGNAL(clicked()),this,SLOT(alterFunction()));
 }
 
-void QFunctionTest::ApplyFunction()
+void qFunctionTest::applyFunction()
 {
     QString info;
     string res;
     info = textInfo->toPlainText();
-    res=CreateFunction(dbName,info);
+    res=create_function(dbName,info);
     if(res.compare("success")==0)
     {
         QMessageBox::information(this,"SUCCESS!","create function success");
@@ -47,10 +47,10 @@ void QFunctionTest::ApplyFunction()
     //qDebug("%s",info);
 }
 
-void QFunctionTest::DropTheFunction()
+void qFunctionTest::dropFunction()
 {
     string res;
-    res = DropFunction(dbName,funcName);
+    res = drop_function(dbName,funcName);
     if(res.compare("success")==0)
     {
         QMessageBox::information(this,"SUCCESS!","drop function success");
@@ -61,19 +61,19 @@ void QFunctionTest::DropTheFunction()
     }
 }
 
-void QFunctionTest::AlterFunction()
+void qFunctionTest::alterFunction()
 {
     QString res;
-    res = GetFunction(dbName,funcName);
+    res = get_function(dbName,funcName);
     textInfo->setPlainText(res);
 }
 
-void QFunctionTest::SetText(QString info)
+void qFunctionTest::setText(QString info)
 {
     textInfo->setPlainText(info);
 }
 
-void QFunctionTest::SetAllName(QString db_name, QString func_name)
+void qFunctionTest::setAllName(QString db_name,QString func_name)
 {
     if(db_name!=NULL&&func_name!=NULL)
     {

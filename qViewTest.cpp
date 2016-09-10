@@ -9,7 +9,7 @@
 #include "qViewTest.h"
 #include "mysqlQuery.h"
 
-QViewTest::QViewTest()
+qViewTest::qViewTest()
 {
     QPushButton *pushButton = new QPushButton(tr("apply new view"));
     pushButton->setGeometry(QRect(70,40,75,23));
@@ -26,18 +26,18 @@ QViewTest::QViewTest()
     mainLayout->addWidget(alterButton);
     this->setLayout(mainLayout);
     
-    connect(pushButton,SIGNAL(clicked()),this,SLOT(ApplyView()));
-    connect(dropButton,SIGNAL(clicked()),this,SLOT(DropTheView()));
-    connect(alterButton,SIGNAL(clicked()),this,SLOT(AlterView()));
+    connect(pushButton,SIGNAL(clicked()),this,SLOT(applyView()));
+    connect(dropButton,SIGNAL(clicked()),this,SLOT(dropView()));
+    connect(alterButton,SIGNAL(clicked()),this,SLOT(alterView()));
 }
 
-void QViewTest::ApplyView()
+void qViewTest::applyView()
 {
     QString info;
     string res;
     info = textInfo->toPlainText();
     //新建视图
-    res = CreateView("xfxf",info);
+    res = create_view("xfxf",info);
     if(res.compare("success")==0)
     {
         QMessageBox::information(this,"SUCCESS","create view success");
@@ -49,14 +49,14 @@ void QViewTest::ApplyView()
     //qDebug("%s",info);
 }
 
-void QViewTest::DropTheView()
+void qViewTest::dropView()
 {
     QString my_dbName,my_viewName;
     string res;
     my_dbName = "xfxf";
     my_viewName = "new_view";
     //删除视图
-    res = DropView(my_dbName,my_viewName);
+    res = drop_view(my_dbName,my_viewName);
     if(res.compare("success")==0)
     {
         QMessageBox::information(this,"SUCCESS!","drop view success");
@@ -67,20 +67,20 @@ void QViewTest::DropTheView()
     }
 }
 
-void QViewTest::AlterView()
+void qViewTest::alterView()
 {
     QString res;
     //修改视图
-    res = GetView("xfxf","new_view");
+    res = get_view("xfxf","new_view");
     textInfo->setPlainText(res);
 }
 
-void QViewTest::SetText(QString info)
+void qViewTest::setText(QString info)
 {
     textInfo->setPlainText(info);
 }
 
-void QViewTest::SetAllName(QString db_name, QString view_name)
+void qViewTest::setAllName(QString db_name,QString view_name)
 {
     if(db_name!=NULL&&view_name!=NULL)
     {

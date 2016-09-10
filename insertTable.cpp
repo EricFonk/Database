@@ -25,7 +25,7 @@ InsertTable::InsertTable(QString table_name)
     mainLayout->addWidget(table);
     mainLayout->addWidget(pushButton);
     this->setLayout(mainLayout);
-    
+	this->setAttribute(Qt::WA_DeleteOnClose, true);
     connect(pushButton, SIGNAL(clicked()),this,SLOT(ApplyInsert()));
 }
 
@@ -39,24 +39,34 @@ void InsertTable::SetHeaders(int col,QStringList headers)
 
 void InsertTable::ApplyInsert()
 {
-    QString myQuery = "insert into "+tableName+" values(";
+    QString myquery = "insert into "+tableName;
+	QString selectedCols = "";
+	QString insertVals = "";
     for(int i=0;i<qSumCol;i++)
     {
-        myQuery = myQuery + "'" + table->item(0,i)->text() + "'";
-        if(i!=(qSumCol-1))
-        {
-            myQuery = myQuery + ",";
-        }
+		if (table->item(0, i) != NULL)
+		{
+			selectedCols = selectedCols + "`" + this->qHead[i] + "`";
+			insertVals = insertVals + "'" + table->item(0, i)->text() + "'";
+			if (i != (qSumCol - 1)&&table->item(0,i+1)!=NULL)//不是最后一个且后面一个不为空
+			{
+				selectedCols = selectedCols + ",";
+				insertVals = insertVals + ",";
+			}
+		}
     }
-    myQuery = myQuery + ");";
+    myquery = myquery + "("+ selectedCols + ") " + "values(" + insertVals + ");";
     std::string res;
-    res = ExecuteWithQuery(0,myQuery);
+	double timestamp;
+	long affectedRows;
+    res = executeWithQuery(0,myquery,timestamp, affectedRows);
     if(res.compare("success")==0)
     {
         qDebug("insert success");
         //do sth
         //insert with query
         QMessageBox::information(this,"Insert Success!","Please refresh table");
+		this->close();
     }
     else
     {

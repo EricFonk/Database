@@ -18,14 +18,14 @@ class SchemasTest : public QWidget
     Q_OBJECT
 public:
     SchemasTest();
-    void InitData(QStringList);
+    void initData(QStringList);
 public:
     QStringListModel *model;
     QListView *listView;
     QStringList allDB;
     private slots:
-    void CreateDatabase();
-    void DropDatabase();
+    void createDatabase();
+    void dropDatabase();
 };
 
 #endif /* schemas_test_h */

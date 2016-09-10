@@ -20,20 +20,20 @@ class TableCrt : public QWidget
     
 public:
     TableCrt();
-    void InitAllTables(QStringList, QString);
+    void initAllTables(QStringList, QString);
 public:
     QTableWidget *tableOpt;
     QLineEdit *newTableName;//表名输入框
     QLabel *dbNameLabel;//所属模式标签
     QString dbName;//数据库名
     int columns_num;//列名
-    void SetDBName(QString);//设置数据库
-    void LoadTableInfo(QString);
+    void setDBName(QString);//设置数据库
+    void loadTableInfo(QString);
 signals:
-    void CreateTableSuccess(QString tableName);
+    void createTableSuccess(QString tableName);
     public slots:
-    void ApplyCreate(bool b=false);//提交建表动作
-    void InsertCol();//插入新列
+    void applyCreate(bool b=false);//提交建表动作
+    void insertCol();//插入新列
 };
 
 #endif /* table_create_h */

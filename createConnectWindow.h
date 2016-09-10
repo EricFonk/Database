@@ -12,6 +12,7 @@
 #include <QWidget>
 #include <QDialog>
 #include <QLabel>
+#include <QDir>
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QPushButton>

@@ -1,14 +1,9 @@
 #include "ExportPart.h"
-//#include "QtWidgets\qapplication.h"
+#include "QtWidgets\qapplication.h"
 #include "qstring.h"
 #include "qmessagebox.h"
-//#include "qsqldatabase.h"
-//#include "qsqlquerymodel.h"
 #include "qstandarditemmodel"
-//#include "qsqlquery.h"
-//#include "qsqlrecord.h"
-//#include "qsqlrelationaltablemodel"
-//#include "winsock.h"
+#include "winsock.h"
 #include "iostream"
 #include "stdio.h"
 #include "string.h"
@@ -18,15 +13,16 @@
 #include "qfiledialog.h"
 #include "stdlib.h"
 #include "qtextstream.h"
+#include "mysqlQuery.h"
 
 #pragma comment(lib,"libmysql.lib")
-//#pragma comment(lib,"wsock32.lib")
+#pragma comment(lib,"wsock32.lib")
 
 QString SelectDatabaseName;
 QString ExportContent;
 database AllData[100];
 database ExportData[100];
-QString ExportPassword = "63026302";
+QString ExportPassword = "123456";
 MYSQL Export_Mysql;
 ExportPart::ExportPart()
 {
@@ -87,7 +83,7 @@ ExportPart::ExportPart()
 	BottomLayout = new QHBoxLayout();
 	Label_ExportFolder = new QLabel(tr("Export to Dump Project Folder"));
 	LineEdit_ExportPath = new QLineEdit();
-	LineEdit_ExportPath->setFixedWidth(700);
+	//LineEdit_ExportPath->setFixedWidth(700);
 	PushBtn_FileOpen = new QPushButton("...");
 	BottomLayout->addWidget(Label_ExportFolder);
 	BottomLayout->addWidget(LineEdit_ExportPath);
@@ -114,6 +110,7 @@ ExportPart::ExportPart()
 	WholeWindow->addLayout(OtherLayout, 1);
 	WholeExport->setLayout(WholeWindow);
 
+	ConnectDatabase();
 	TableWidgetShowDatabasesInit();
 
 	connect(PushBtn_Refresh, SIGNAL(clicked()), this, SLOT(Refresh()));
@@ -127,56 +124,34 @@ ExportPart::ExportPart()
 
 bool ExportPart::ExportConnectSQL()
 {
-	mysql_init(&Export_Mysql);
+	/*mysql_init(&Export_Mysql);
 	if (!mysql_real_connect(&Export_Mysql, "localhost", "root", ExportPassword.toStdString().c_str(), "", 3306, NULL, 0))
 	{
 		QMessageBox::warning(this, tr("Warning!"), mysql_error(&Export_Mysql), QMessageBox::Ok);
 		return false;
 	}
+	return true;*/
 	return true;
 }
 void ExportPart::TableWidgetShowDatabasesInit()
 {
-	if (ExportConnectSQL() == false)
+	QStringList databasename;
+	GetAllDatabases(databasename);
+	QStringList header;
+	header << "Database";
+	TableWidget_ShowDatabases->setRowCount(databasename.size());
+	TableWidget_ShowDatabases->setColumnCount(1);
+	TableWidget_ShowDatabases->setHorizontalHeaderLabels(header);
+	for (int i = 0; i < databasename.size(); i++)
 	{
-	}
-	else
-	{
-		MYSQL_RES *result;
-		int res;
-		res = mysql_query(&Export_Mysql, "show databases; ");
-		if (!res)
-		{
-			result = mysql_store_result(&Export_Mysql);
-			if (result)
-			{
-				MYSQL_ROW row;
-				int databasesnum;
-				databasesnum = mysql_affected_rows(&Export_Mysql);
-				TableWidget_ShowDatabases->setRowCount(databasesnum);
-				TableWidget_ShowDatabases->setColumnCount(1);
-				QStringList header;
-				header << "Database";
-				TableWidget_ShowDatabases->setHorizontalHeaderLabels(header);
-				for (int m = 0; m < databasesnum; m++)
-				{
-					row = mysql_fetch_row(result);
-					if (row != NULL)
-					{
-						QString s;//s是每个数据库的名字
-						QTableWidgetItem *checkBox = new QTableWidgetItem();
-						checkBox->setCheckState(Qt::Unchecked);
-						TableWidget_ShowDatabases->setItem(m, 0, checkBox);
-						checkBox->setText(row[0]);
-						s = row[0];
-						AllData[m].databasename = s;
-						ExportData[m].databasename = s;
-					}
-				}
-			}
-		}
-		mysql_free_result(result);
-		mysql_close(&Export_Mysql);
+		QString s;//s是每个数据库的名字
+		QTableWidgetItem *checkBox = new QTableWidgetItem();
+		checkBox->setCheckState(Qt::Unchecked);
+		TableWidget_ShowDatabases->setItem(i, 0, checkBox);
+		checkBox->setText(databasename.at(i));
+		s = databasename.at(i);
+		AllData[i].databasename = s;
+		ExportData[i].databasename = s;
 	}
 }
 void ExportPart::Refresh()
@@ -216,6 +191,51 @@ void ExportPart::SavePath()
 }
 void ExportPart::GetTable(int row, int col)
 {
+	QString DatabaseName = AllData[row].databasename;
+	int tablenum;
+	QStringList OneDatabaseAllTable;
+	GetAllTables(OneDatabaseAllTable, DatabaseName);
+	tablenum = OneDatabaseAllTable.size();
+	TableWidget_ShowTables->setRowCount(tablenum);
+	TableWidget_ShowTables->setColumnCount(1);
+	QStringList header;
+	header << DatabaseName;
+	TableWidget_ShowTables->setHorizontalHeaderLabels(header);
+	for (int i = 0; i < tablenum; i++)
+	{
+		QTableWidgetItem *checkBox = new QTableWidgetItem();
+		if (TableWidget_ShowDatabases->item(row, col)->checkState() == Qt::Checked)
+		{
+			checkBox->setCheckState(Qt::Checked);
+			ExportData[row].SelectStatus = true;
+		}
+		else
+		{
+			checkBox->setCheckState(Qt::Unchecked);
+			ExportData[row].SelectStatus = false;
+			ExportData[row].table.clear();
+		}
+		TableWidget_ShowTables->setItem(i, 0, checkBox);
+		checkBox->setText(OneDatabaseAllTable.at(i));
+		AllData[row].table.append(OneDatabaseAllTable.at(i));
+		QString tablename = TableWidget_ShowTables->item(i, 0)->text().trimmed();
+		int tablepos = ExportData[row].table.indexOf(tablename);
+		if (tablepos == -1)
+		{
+			ExportData[row].table.append(OneDatabaseAllTable.at(i));
+		}
+	}
+	if (TableWidget_ShowTables->rowCount() != 0)
+	{
+		PushBtn_SelectTable->setEnabled(true);
+		PushBtn_UnselectAll->setEnabled(true);
+	}
+	else
+	{
+		PushBtn_SelectTable->setEnabled(false);
+		PushBtn_UnselectAll->setEnabled(false);
+	}
+	/*
 	QString DatabaseName = AllData[row].databasename;
 	QString query = "show tables from " + DatabaseName + "; ";
 	MYSQL_RES *result;
@@ -281,7 +301,7 @@ void ExportPart::GetTable(int row, int col)
 		PushBtn_UnselectAll->setEnabled(false);
 	}
 	mysql_free_result(result);
-	mysql_close(&Export_Mysql);
+	mysql_close(&Export_Mysql);*/
 }
 void ExportPart::GetSelectTable(int row, int col)
 {
@@ -362,13 +382,11 @@ QString ExportPart::GetType()
 void ExportPart::Export()
 {
 	QString MysqlPos,ExportType;
-	MYSQL_ROW row;
-	MYSQL_RES *res;
 	int flag = 0;
 	int i = 0;
 	int m = 0;
 	ExportType = GetType();
-	if (ExportConnectSQL() == true)
+	/*if (ExportConnectSQL() == true)
 	{
 		char sql[100] = "select @@basedir as basePath from dual";
 		mysql_query(&Export_Mysql, sql);
@@ -379,7 +397,8 @@ void ExportPart::Export()
 		}
 		mysql_free_result(res);
 		mysql_close(&Export_Mysql);
-	}
+	}*/
+	MysqlPos=GetMysqlPath();
 	while (ExportData[m].databasename != "")
 	{
 		if (ExportData[m].SelectStatus == false)
@@ -396,7 +415,7 @@ void ExportPart::Export()
 			if (i == 0)
 			{
 				ExportContent.append("> " + LineEdit_ExportPath->text());
-//				flag = WinExec(ExportContent.toStdString().c_str(), SW_HIDE);
+				flag = WinExec(ExportContent.toStdString().c_str(), SW_HIDE);
 				if (flag < 32)
 				{ 
 					break;
@@ -407,7 +426,7 @@ void ExportPart::Export()
 			else
 			{
 				ExportContent.append("> Temp.sql");
-//				flag  = WinExec(ExportContent.toStdString().c_str(), SW_HIDE);
+				flag  = WinExec(ExportContent.toStdString().c_str(), SW_HIDE);
 				if (flag < 32)
 				{
 					break;

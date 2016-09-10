@@ -8,7 +8,11 @@
 
 #include "mysqlQuery.h"
 #include <string>
-
+#include <ctime>
+#include "time.h"
+#include <sys/timeb.h>
+#include <sys/utime.h>
+#include <Windows.h>
 //#pragma comment(lib,"wsock32.lib")
 //#pragma comment(lib,"libmysql.lib")//mysql源码库
 
@@ -18,8 +22,19 @@ char field[32][32];
 MYSQL_RES *res;//mysql结果集
 MYSQL_ROW column;//mysql行对象
 char query[150];
-
+QString currentErrorInfo="";//当前错误信息
+QString currentWarningInfo="";//当前警告信息
 using namespace std;
+
+QString GetErrorInfo()
+{
+	return currentErrorInfo;
+}
+
+QString GetWarningInfo()
+{
+	return currentWarningInfo;
+}
 
 //连接数据库
 bool ConnectDatabase()
@@ -37,7 +52,7 @@ bool ConnectDatabase()
     }
 }
 
-char* GetOneVariable(std::string variable)
+char* getOneVariable(std::string variable)
 {
     MYSQL_ROW sql_row;
     std::string query = "show variables like '" + variable + "'";
@@ -55,7 +70,7 @@ char* GetOneVariable(std::string variable)
     return strResult;
 }
 
-QStandardItemModel* GetConnections(QStandardItemModel *model)
+QStandardItemModel* getConnections(QStandardItemModel *model)
 {
     std::string query = "show PROCESSLIST";
     std::string strResult;
@@ -99,122 +114,152 @@ QStandardItemModel* GetConnections(QStandardItemModel *model)
 }
 
 //根据表名搜索数据 返回行数、列数、列名、每条记录具体数值、主键名、主键位置
-bool SelectTest(QString table_name,QStringList &head,QStringList &data,int &row,int &col,QString mainKey,int &mainPos)
+bool selectTest(QString table_name,QStringList &head,QStringList &data,int &row,int &col,QStringList mainKey,QStringList &mainPos)
 {
-	QString myQuery="select * from "+table_name+";";
+	QString myquery="select * from `"+table_name+"`;";
 	char *mytemp;
 	int sumRow=0;
 	int sumCol=0;
 	MYSQL_RES *res;
 	MYSQL_ROW column;
 
-	mysql_query(&mysql,myQuery.toStdString().c_str());
+	if (mysql_query(&mysql, myquery.toStdString().c_str()))
+	{
+		currentErrorInfo = mysql_error(&mysql);
+		return false;
+	}
 	res=mysql_store_result(&mysql);
 	sumRow = mysql_affected_rows(&mysql);
 	row = sumRow;
 	sumCol = mysql_field_count(&mysql);
 	col = sumCol;
-	if(res->row_count!=0)
-	{
-		for(int i=0;i<sumCol;i++)
+	for (int i = 0; i<sumCol; i++)
 	{
 		mytemp = mysql_fetch_field(res)->name;
-		if(mainKey.toStdString().compare(mytemp)==0)
+		for (int j = 0; j < mainKey.length(); j++)
 		{
-			mainPos=i;			
+			if (mainKey[j].toStdString().compare(mytemp) == 0)
+			{
+				mainPos << i + "";
+			}
 		}
 		head<<mytemp;
-	}	
-	qDebug("in %d",mainPos);
-	while(column=mysql_fetch_row(res))
+		qDebug("in %d", mainPos);
+	}
+	if(res->row_count!=0)
 	{
-		string temp;
-		qDebug("%d %d",sumRow,sumCol);
-		for(int j=0;j<col;j++)
+		while(column=mysql_fetch_row(res))
 		{
-			if(column[j])
+			string temp;
+			qDebug("%d %d",sumRow,sumCol);
+			for(int j=0;j<col;j++)
 			{
-				temp += column[j];
-			}			
-			if(j!=(col-1))
-			{
-				temp += "//";
-			}			
+				if(column[j])
+				{
+					temp += column[j];
+				}			
+				if(j!=(col-1))
+				{
+					temp += "//";
+				}			
+			}
+			data<<temp.c_str();
 		}
-		
-		data<<temp.c_str();
+		//qDebug("main %s %d",mainKey.toStdString().c_str(),mainPos);
 	}
-
-	//qDebug("main %s %d",mainKey.toStdString().c_str(),mainPos);
-	}
-	
 	
 	return true;
 }
 
 //根据表名、数据、约束条件进行数据更新
-string UpdateTest(QString table_name,QString data,QString con)
+string updateTest(QString table_name,QString data,QString con,double& timestamp,long& affectedRows)
 {
-	QString myQuery="update "+table_name+" set ";
-	myQuery = myQuery + data + " where " + con + ";";
-	//qDebug("%s",myQuery);
-	if(mysql_query(&mysql,myQuery.toStdString().c_str()))
+	struct timeb start = { 0 };
+	struct timeb end = { 0 };
+
+	ftime(&start);
+	QString myquery="update "+table_name+" set ";
+	myquery = myquery + data + " where " + con + ";";
+	//qDebug("%s",myquery);
+	if(mysql_query(&mysql,myquery.toStdString().c_str()))
 	{
+		ftime(&end);
+		timestamp = difftime(end.millitm, start.millitm);
+		affectedRows = mysql_affected_rows(&mysql);
 		qDebug("error %s",mysql_error(&mysql));
+		currentErrorInfo = mysql_error(&mysql);
 		return mysql_error(&mysql);
 	}
 	else
 	{
+		ftime(&end);
+		timestamp = difftime(end.millitm, start.millitm);
+		affectedRows = mysql_affected_rows(&mysql);
 		return "success";
 	}
 }
 
 //根据表名获取主键的名称
-bool GetMainKey(QString &mainKey,QString table_name)
+bool getMainKey(QStringList &mainKey,QString table_name)
 {
     MYSQL_RES *res;
     MYSQL_ROW column;
-    QString myQuery;
-    myQuery = "select COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS where table_name='"+table_name+"' AND COLUMN_KEY='PRI';";
+    QString myquery;
+    myquery = "select COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS where table_name='"+table_name+"' AND COLUMN_KEY='PRI';";
     //获取主键值
-    mysql_query(&mysql,myQuery.toStdString().c_str());
+    mysql_query(&mysql,myquery.toStdString().c_str());
     res=mysql_store_result(&mysql);
     
     if(res->row_count!=0)
     {
-        column=mysql_fetch_row(res);
-        string tmp = column[0];
-        mainKey=QString::fromStdString(tmp);
-    }
-    else
+		//如果有一个自带主键 即主键个数为2 可不可能为3？？
+		for (int i = 0; i < res->row_count; i++)
+		{
+			string tmp;
+			column = mysql_fetch_row(res);
+			tmp = column[0];
+			mainKey << QString::fromStdString(tmp);
+		}
+	}
+    /*else
     {
-        
-        mainKey="";
-    }
-    
+		mainKey<<"";
+    }*/
     return true;
 }
 
 //根据sql语句进行直接操作
-string ExecuteWithQuery(int type,QString query)
+string executeWithQuery(int type, QString query, double& timestamp, long& affectedRows)
 {
+	struct timeb start = { 0 };
+	struct timeb end = { 0 };
+
+	ftime(&start);
     if(mysql_query(&mysql,query.toStdString().c_str()))
     {
+		ftime(&end);
+		timestamp = difftime(end.millitm, start.millitm);
+		affectedRows = mysql_affected_rows(&mysql);
         qDebug("error %s",mysql_error(&mysql));
         return mysql_error(&mysql);
     }
     else
     {
+		ftime(&end);
+		timestamp = difftime(end.millitm,start.millitm);
+		affectedRows = mysql_affected_rows(&mysql);
+		int i = 0;
         /*
-         //update
+         //update 
+
          if(type==0)
          {
          QStringList real_head,real_data;
          QString mainKey;
          int row,col,mainPos;
          bool mytest;
-         mytest=GetMainKey(mainKey,"new_one");
-         mytest=SelectTest("new_one",real_head,real_data,row,col,mainKey,mainPos);
+         mytest=getMainKey(mainKey,"new_one");
+         mytest=selectTest("new_one",real_head,real_data,row,col,mainKey,mainPos);
          //RefreshTableData(real_data,row,col);
          }
          */
@@ -223,12 +268,12 @@ string ExecuteWithQuery(int type,QString query)
 }
 
 //存储过程相关操作
-string FindPros(QString dbName,QStringList &pro_list)
+string find_pros(QString dbName,QStringList &pro_list)
 {
-    QString myQuery;
+    QString myquery;
     
-    myQuery = "select `name` from mysql.proc where db = '"+dbName+"' and `type` = 'PROCEDURE';";
-    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
+    myquery = "select `name` from mysql.proc where db = '"+dbName+"' and `type` = 'PROCEDURE';";
+    if(mysql_query(&mysql,myquery.toStdString().c_str()))
     {
         return mysql_error(&mysql);
     }
@@ -247,19 +292,19 @@ string FindPros(QString dbName,QStringList &pro_list)
 }
 
 //根据数据库名、存储过程内容新建存储过程
-string CreateProcedure(QString dbName,QString pro_info)
+string create_procedure(QString dbName,QString pro_info)
 {
-    QString myQuery;
+    QString myquery;
     
-    myQuery="use "+dbName+";";
-    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
+    myquery="use "+dbName+";";
+    if(mysql_query(&mysql,myquery.toStdString().c_str()))
     {
         return mysql_error(&mysql);
     }
     else
     {
-        myQuery=pro_info+";";
-        if(mysql_query(&mysql,myQuery.toStdString().c_str()))
+        myquery=pro_info+";";
+        if(mysql_query(&mysql,myquery.toStdString().c_str()))
         {
             return mysql_error(&mysql);
         }
@@ -271,11 +316,11 @@ string CreateProcedure(QString dbName,QString pro_info)
 }
 
 //根据数据库名、存储过程名删除存储过程
-string DropProcedure(QString dbName,QString pro_name)
+string drop_procedure(QString dbName,QString pro_name)
 {
-    QString myQuery;
-    myQuery = "drop procedure `"+dbName+"`.`"+pro_name+"`;";
-    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
+    QString myquery;
+    myquery = "drop procedure `"+dbName+"`.`"+pro_name+"`;";
+    if(mysql_query(&mysql,myquery.toStdString().c_str()))
     {
         return mysql_error(&mysql);
     }
@@ -286,11 +331,11 @@ string DropProcedure(QString dbName,QString pro_name)
 }
 
 //根据数据库名、存储过程名获取存储过程内容
-QString GetProcedure(QString dbName,QString pro_name)
+QString get_procedure(QString dbName,QString pro_name)
 {
-    QString myQuery;
-    myQuery = "show create procedure "+dbName+"."+pro_name;
-    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
+    QString myquery;
+    myquery = "show create procedure "+dbName+"."+pro_name;
+    if(mysql_query(&mysql,myquery.toStdString().c_str()))
     {
         return mysql_error(&mysql);
     }
@@ -306,12 +351,12 @@ QString GetProcedure(QString dbName,QString pro_name)
 }
 
 //函数相关操作
-string FindFuncs(QString dbName,QStringList &func_list)
+string find_funcs(QString dbName,QStringList &func_list)
 {
-    QString myQuery;
+    QString myquery;
     
-    myQuery = "select `name` from mysql.proc where db = '"+dbName+"' and `type` = 'FUNCTION';";
-    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
+    myquery = "select `name` from mysql.proc where db = '"+dbName+"' and `type` = 'FUNCTION';";
+    if(mysql_query(&mysql,myquery.toStdString().c_str()))
     {
         return mysql_error(&mysql);
     }
@@ -330,19 +375,19 @@ string FindFuncs(QString dbName,QStringList &func_list)
 }
 
 //根据数据库名、函数内容新建函数
-string CreateFunction(QString dbName,QString func_info)
+string create_function(QString dbName,QString func_info)
 {
-    QString myQuery;
+    QString myquery;
     
-    myQuery="use "+dbName+";";
-    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
+    myquery="use "+dbName+";";
+    if(mysql_query(&mysql,myquery.toStdString().c_str()))
     {
         return mysql_error(&mysql);
     }
     else
     {
-        myQuery=func_info+";";
-        if(mysql_query(&mysql,myQuery.toStdString().c_str()))
+        myquery=func_info+";";
+        if(mysql_query(&mysql,myquery.toStdString().c_str()))
         {
             return mysql_error(&mysql);
         }
@@ -353,11 +398,11 @@ string CreateFunction(QString dbName,QString func_info)
     }
 }
 
-string DropFunction(QString dbName,QString func_name)
+string drop_function(QString dbName,QString func_name)
 {
-    QString myQuery;
-    myQuery = "drop function `"+dbName+"`.`"+func_name+"`;";
-    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
+    QString myquery;
+    myquery = "drop function `"+dbName+"`.`"+func_name+"`;";
+    if(mysql_query(&mysql,myquery.toStdString().c_str()))
     {
         return mysql_error(&mysql);
     }
@@ -367,11 +412,11 @@ string DropFunction(QString dbName,QString func_name)
     }
 }
 
-QString GetFunction(QString dbName,QString func_name)
+QString get_function(QString dbName,QString func_name)
 {
-    QString myQuery;
-    myQuery = "show create function "+dbName+"."+func_name;
-    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
+    QString myquery;
+    myquery = "show create function "+dbName+"."+func_name;
+    if(mysql_query(&mysql,myquery.toStdString().c_str()))
     {
         return mysql_error(&mysql);
     }
@@ -388,11 +433,11 @@ QString GetFunction(QString dbName,QString func_name)
 
 //视图相关操作
 //根据database名字查找视图
-string FindViews(QString dbName,QStringList &view_list)
+string find_views(QString dbName,QStringList &view_list)
 {
-    QString myQuery;
-    myQuery = "SELECT TABLE_NAME from information_schema.VIEWS where TABLE_SCHEMA='"+dbName+"';";
-    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
+    QString myquery;
+    myquery = "SELECT TABLE_NAME from information_schema.VIEWS where TABLE_SCHEMA='"+dbName+"';";
+    if(mysql_query(&mysql,myquery.toStdString().c_str()))
     {
         return mysql_error(&mysql);
     }
@@ -409,19 +454,19 @@ string FindViews(QString dbName,QStringList &view_list)
         return "success";
     }
 }
-string CreateView(QString dbName,QString view_info)
+string create_view(QString dbName,QString view_info)
 {
-    QString myQuery;
+    QString myquery;
     
-    myQuery="use "+dbName+";";
-    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
+    myquery="use "+dbName+";";
+    if(mysql_query(&mysql,myquery.toStdString().c_str()))
     {
         return mysql_error(&mysql);
     }
     else
     {
-        myQuery=view_info+";";
-        if(mysql_query(&mysql,myQuery.toStdString().c_str()))
+        myquery=view_info+";";
+        if(mysql_query(&mysql,myquery.toStdString().c_str()))
         {
             return mysql_error(&mysql);
         }
@@ -432,11 +477,11 @@ string CreateView(QString dbName,QString view_info)
     }
 }
 
-string DropView(QString dbName,QString view_name)
+string drop_view(QString dbName,QString view_name)
 {
-    QString myQuery;
-    myQuery = "drop view `"+dbName+"`.`"+view_name+"`;";
-    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
+    QString myquery;
+    myquery = "drop view `"+dbName+"`.`"+view_name+"`;";
+    if(mysql_query(&mysql,myquery.toStdString().c_str()))
     {
         return mysql_error(&mysql);
     }
@@ -446,11 +491,11 @@ string DropView(QString dbName,QString view_name)
     }
 }
 
-QString GetView(QString dbName,QString view_name)
+QString get_view(QString dbName,QString view_name)
 {
-    QString myQuery;
-    myQuery = "show create view "+dbName+"."+view_name;
-    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
+    QString myquery;
+    myquery = "show create view "+dbName+"."+view_name;
+    if(mysql_query(&mysql,myquery.toStdString().c_str()))
     {
         return mysql_error(&mysql);
     }
@@ -483,7 +528,7 @@ QString GetView(QString dbName,QString view_name)
 
 //DML
 //database handler
-string Test(QString newDB)
+string test(QString newDB)
 {
     if(mysql_query(&mysql,"select * from test_one;"))
     {
@@ -497,8 +542,8 @@ bool GetAllDatabases(QStringList &list)
     //必须使用局部变量！！！
     MYSQL_RES *res;
     MYSQL_ROW column;
-    string myQuery = "Select SCHEMA_NAME From information_schema.SCHEMATA;";
-    if(mysql_query(&mysql,myQuery.c_str()))
+    string myquery = "Select SCHEMA_NAME From information_schema.SCHEMATA;";
+    if(mysql_query(&mysql,myquery.c_str()))
     {
         qDebug("error %s",mysql_error(&mysql));
         return false;
@@ -517,8 +562,8 @@ bool GetAllDatabases(QStringList &list)
 //根据数据库名新建数据库
 string CreateDBTest(QString newDB)
 {
-    string myQuery = "create database "+newDB.toStdString()+";";
-    if(mysql_query(&mysql,myQuery.c_str()))
+    string myquery = "create database "+newDB.toStdString()+";";
+    if(mysql_query(&mysql,myquery.c_str()))
     {
         qDebug("error %s",mysql_error(&mysql));
         return mysql_error(&mysql);
@@ -530,10 +575,10 @@ string CreateDBTest(QString newDB)
 }
 
 //根据数据库名删除数据库
-string DropDBTest(QString oldDB)
+string dropDBTest(QString oldDB)
 {
-    string myQuery = "drop database "+oldDB.toStdString()+";";
-    if(mysql_query(&mysql,myQuery.c_str()))
+    string myquery = "drop database "+oldDB.toStdString()+";";
+    if(mysql_query(&mysql,myquery.c_str()))
     {
         qDebug("error %s",mysql_error(&mysql));
         return mysql_error(&mysql);
@@ -550,8 +595,8 @@ string GetAllTables(QStringList &list,QString currentDB)
     //必须使用局部变量！！！
     MYSQL_RES *res;
     MYSQL_ROW column;
-    string myQuery = "select table_name from information_schema.tables where table_schema='"+currentDB.toStdString()+"';";
-    if(mysql_query(&mysql,myQuery.c_str()))
+    string myquery = "select table_name from information_schema.tables where table_schema='"+currentDB.toStdString()+"';";
+    if(mysql_query(&mysql,myquery.c_str()))
     {
         qDebug("error %s",mysql_error(&mysql));
         return mysql_error(&mysql);
@@ -568,47 +613,47 @@ string GetAllTables(QStringList &list,QString currentDB)
 }
 
 //根据数据库名、表名、列语句、主键语句、唯一约束语句新建表
-string CreateNewTable(QString dbName,QString tableName,QStringList createOpt,QString pkOption,QStringList uniqOpts)
+string createNewTable(QString dbName,QString tableName,QStringList createOpt,QString pkOption,QStringList uniqOpts)
 {
-    QString myQuery;
-    myQuery = "create table ";
+    QString myquery;
+    myquery = "create table ";
     if(dbName!=NULL)
     {
-        myQuery = myQuery+"`"+dbName+"`.";
+        myquery = myquery+"`"+dbName+"`.";
     }
     if(tableName!=NULL)
     {
-        myQuery = myQuery+"`"+tableName+"`"+"(";
+        myquery = myquery+"`"+tableName+"`"+"(";
     }
     for(int i=0;i<createOpt.length();i++)
     {
-        myQuery=myQuery+createOpt[i];
+        myquery=myquery+createOpt[i];
         if(i!=(createOpt.length()-1))
         {
-            myQuery = myQuery + ",";
+            myquery = myquery + ",";
         }
     }
     //设置主键约束
     if(pkOption!=NULL)
     {
-        myQuery = myQuery +","+pkOption;
+        myquery = myquery +","+pkOption;
     }
     //设置唯一约束
     if(uniqOpts.length()!=0)
     {
-        myQuery = myQuery +",";
+        myquery = myquery +",";
         for(int i=0;i<uniqOpts.length();i++)
         {
-            myQuery=myQuery+uniqOpts[i];
+            myquery=myquery+uniqOpts[i];
             if(i!=(uniqOpts.length()-1))
             {
-                myQuery = myQuery + ",";
+                myquery = myquery + ",";
             }
         }
     }
     
-    myQuery = myQuery + ");";
-    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
+    myquery = myquery + ");";
+    if(mysql_query(&mysql,myquery.toStdString().c_str()))
     {
         qDebug("error %s",mysql_error(&mysql));
         return mysql_error(&mysql);
@@ -619,7 +664,7 @@ string CreateNewTable(QString dbName,QString tableName,QStringList createOpt,QSt
     }
 }
 
-string DropTableWithQuery(QString query)
+string dropTableWithQuery(QString query)
 {
     if(mysql_query(&mysql,query.toStdString().c_str()))
     {
@@ -633,12 +678,13 @@ string DropTableWithQuery(QString query)
 }
 
 //根据表名获取其所有列信息
-void GetTableAllCols(QString tableName,QStringList &col_name,QStringList &col_default,QStringList &col_isNull,
-					QStringList &col_type,QStringList &col_key,QStringList &col_extra,QStringList &col_uni)
+void getTableAllCols(QString dbName,QString tableName,QStringList &col_name,QStringList &col_default,QStringList &col_isNull,
+					QStringList &col_type,QStringList &col_key,QStringList &col_extra,QStringList &col_uni,QStringList &col_unsign,QStringList &col_zero)
 {
-    QString myQuery;
-    myQuery = "SELECT * FROM information_schema.COLUMNS where table_name='"+tableName+"';";
-    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
+    QString myquery;
+	QString mytempKey="";
+    myquery = "SELECT * FROM information_schema.COLUMNS where table_name='"+tableName+"' and table_schema='"+dbName+"';";
+    if(mysql_query(&mysql,myquery.toStdString().c_str()))
     {
         qDebug("error %s",mysql_error(&mysql));
     }
@@ -647,38 +693,81 @@ void GetTableAllCols(QString tableName,QStringList &col_name,QStringList &col_de
         //必须使用局部变量！！！
         MYSQL_RES *res;
         res=mysql_store_result(&mysql);
-        while(column=mysql_fetch_row(res))
-        {
-            col_name<<column[3];
-            col_default<<column[5];
-            col_isNull<<column[6];
-            col_type<<column[7];
-            col_key<<column[15];
-            col_extra<<column[16];
+		while (column = mysql_fetch_row(res))
+		{
+			col_name << column[3];
+			col_default << column[5];
+			col_isNull << column[6];
+			col_type << column[7];
+			QString tempType = column[15];
+			QStringList tempTypeList = tempType.split(" ");
+			if (tempTypeList.length() == 1)
+			{
+				col_unsign << "";
+				col_zero << "";
+			}
+			else if(tempTypeList.length() == 2)
+			{
+				if (tempTypeList[1].compare("unsigned")==0)
+				{
+					col_unsign << "unsigned";
+					col_zero << "";
+				}
+				else
+				{
+					col_unsign << "";
+					col_zero << "zerofill";
+				}
+			}
+			else
+			{
+				col_unsign << "unsigned";
+				col_zero << "zerofill";
+			}
+			mytempKey = column[16];
+			if (mytempKey.compare("PRI")==0)
+			{
+				col_key << column[16];
+				col_uni << "";
+			}
+			if (mytempKey.compare("UNI")==0)
+			{
+				col_key << "";
+				col_uni << column[16];
+			}
+			else
+			{
+				col_key << "";
+				col_uni << "";
+			}
+			if (column[17])
+				col_extra << column[17];
+			else
+				col_extra << "";
         }
     }
 }
 
 void getOneTableUniqueChecks(QString dbName, QString tName,QStringList &unique)
 {
-	QString myQuery;
-	myQuery = "SELECT ";
+	QString myquery;
+	myquery = "SELECT ";
 }
 
-QString AlterTableAddColumns(QString dbName,QString tName,QStringList allColNames,QStringList allColTypes,QStringList allColOpts,QStringList allPkOpts,QStringList allIndexOpts)
+QString AlterTable_AddColumns(QString dbName,QString tName,QStringList allColNames,QStringList allColTypes,QStringList allColOpts,QStringList allPkOpts,QStringList allIndexOpts)
 {
-    QString myQuery;
+    QString myquery;
     QString flag;
     QString pkQuery;
     QString indexQuery;
-    myQuery = "ALTER TABLE "+dbName+"."+tName;
+    myquery = "ALTER TABLE "+dbName+"."+tName;
     
     for(int i=0;i<allColNames.length();i++)
     {
-        myQuery += " ADD "+allColNames[i]+" "+allColTypes[i]+" "+allColOpts[i];
+        myquery += " ADD "+allColNames[i]+" "+allColTypes[i]+" "+allColOpts[i];
         if(i!=allColNames.length()-1)
         {
-            myQuery+=",";
+            myquery+=",";
         }
     }
     if(allPkOpts.length()!=0)
@@ -696,7 +785,7 @@ QString AlterTableAddColumns(QString dbName,QString tName,QStringList allColName
                 pkQuery+=")";
             }
         }
-        myQuery += ","+pkQuery;
+        myquery += ","+pkQuery;
     }
     if(allIndexOpts.length()!=0)
     {
@@ -708,19 +797,21 @@ QString AlterTableAddColumns(QString dbName,QString tName,QStringList allColName
                 indexQuery+=",";
             }
         }
-        myQuery += ","+indexQuery;
+        myquery += ","+indexQuery;
     }
-    myQuery +=";";
-    flag = QString::fromStdString(ExecuteWithQuery(0,myQuery));
+    myquery +=";";
+	double timestamp;
+	long affectedRows;
+    flag = QString::fromStdString(executeWithQuery(0,myquery,timestamp,affectedRows));
     return flag;
 }
 
-QString AlterTableDropColumn(QString dbName, QString tName,QString drop_colName)
+QString AlterTable_DropColumn(QString dbName, QString tName,QString drop_colName)
 {
-	QString myQuery;
+	QString myquery;
 	QString flag;
-	myQuery = "ALTER TABLE "+dbName+"."+tName+" DROP "+drop_colName+";";
-	if(mysql_query(&mysql,myQuery.toStdString().c_str()))
+	myquery = "ALTER TABLE "+dbName+"."+tName+" DROP "+drop_colName+";";
+	if(mysql_query(&mysql,myquery.toStdString().c_str()))
 	{
 		qDebug("error %s",mysql_error(&mysql));
 		flag = mysql_error(&mysql);
@@ -733,12 +824,12 @@ QString AlterTableDropColumn(QString dbName, QString tName,QString drop_colName)
 }
 
 //更改表名 检查sql语法是否正确
-QString AlterTableRenameTable(QString tName,QString newTName)
+QString AlterTable_RenameTable(QString tName,QString newTName)
 {
-    QString myQuery;
+    QString myquery;
     QString flag;
-    myQuery = "ALTER TABLE "+tName+" RENAME "+newTName+";";
-    if(mysql_query(&mysql,myQuery.toStdString().c_str()))
+    myquery = "ALTER TABLE "+tName+" RENAME "+newTName+";";
+    if(mysql_query(&mysql,myquery.toStdString().c_str()))
     {
         qDebug("error %s",mysql_error(&mysql));
         flag = mysql_error(&mysql);
@@ -750,12 +841,54 @@ QString AlterTableRenameTable(QString tName,QString newTName)
     return flag;
 }
 
+bool AlterTable_SelectAllFKFromOneTable(QString iDBName,QString iTableName,int &_fkSum,QStringList &_allFKName,QStringList &_fkColumnName,QStringList &_refTableName,QStringList &_refColumnName)
+{
+	QString myquery;
+	bool flag;
+	_fkSum = 0;
+	myquery = "select CONSTRAINT_NAME,COLUMN_NAME,REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME from information_schema.KEY_COLUMN_USAGE where TABLE_NAME='"+iTableName+"' and REFERENCED_COLUMN_NAME!='' and table_schema='"+iDBName+"';";
+	if (mysql_query(&mysql, myquery.toStdString().c_str()))
+	{
+		qDebug("error %s", mysql_error(&mysql));
+		flag = false;
+	}
+	else
+	{
+		flag = true;
+		//必须使用局部变量！！！
+		MYSQL_RES *res;
+		MYSQL_ROW column;
+		res = mysql_store_result(&mysql);
+		while (column = mysql_fetch_row(res))
+		{
+			_fkSum++;
+			if (column[0])
+				_allFKName << column[0];
+			else
+				_allFKName << "";//占位
+			if (column[1])
+				_fkColumnName << column[1];
+			else
+				_fkColumnName << "";//占位
+			if (column[2])
+				_refTableName << column[2];
+			else
+				_refTableName << "";//占位
+			if (column[3])
+				_refColumnName << column[3];
+			else
+				_refColumnName << "";//占位
+		}
+	}
+	return flag;
+}
+
 //这是我写的
 //首先是连接数据库，已经写了
 
 
 //查询用户表中的user和host,返回结果集
-QString QueryUserHost(QStringList &pIOUserHost, int *pIONumberOfColumns, int *pIONumberOfRows)
+QString Query_User_Host(QStringList &pIOUserHost, int *pIONumberOfColumns, int *pIONumberOfRows)
 {
 	QString querySql;
 	QString queryStatus;
@@ -792,7 +925,7 @@ QString QueryUserHost(QStringList &pIOUserHost, int *pIONumberOfColumns, int *pI
 	return queryStatus;
 }
 //查询当前用户的密码
-QString QueryAuthentication(QStringList &pIOPassword,QString pIUserName)
+QString Query_Authentication(QStringList &pIOPassword,QString pIUserName)
 {
 	QString querySql;
 	QString queryStatus;
@@ -815,7 +948,7 @@ QString QueryAuthentication(QStringList &pIOPassword,QString pIUserName)
 	return queryStatus;
 }
 //创建新用户
-QString CreateUser(QString pIUserName, QString pIHost, QString pIPassword)
+QString Create_User(QString pIUserName, QString pIHost, QString pIPassword)
 {
 	QString createSql;
 	QString createStatus;
@@ -833,7 +966,7 @@ QString CreateUser(QString pIUserName, QString pIHost, QString pIPassword)
 }
 
 //删除用户
-QString DeleteUser(QString pIUserName)
+QString Delete_User(QString pIUserName)
 {
 	QString deleteSql;
 	QString deleteStatus;
@@ -851,7 +984,7 @@ QString DeleteUser(QString pIUserName)
 }
 
 //查询权限，将权限值赋给对应的变量
-QString QueryPrivilegesVariables(QString pIUserName, QString pIHost)
+QString Query_Privileges_Variables(QString pIUserName, QString pIHost)
 {
 	QString querySql;
 	QString queryStatus;
@@ -868,7 +1001,7 @@ QString QueryPrivilegesVariables(QString pIUserName, QString pIHost)
 	return queryStatus;
 }
 //查询权限变量
-QString QueryVariables(QStringList &pIOUserPriv)
+QString Query_Variables(QStringList &pIOUserPriv)
 {
 	QString querySql;
 	QString queryStatus;
@@ -896,7 +1029,7 @@ QString QueryVariables(QStringList &pIOUserPriv)
 	return queryStatus;
 }
 //撤销用户权限
-QString RevokePrivileges(QString pIUserName, QString pIHost)
+QString Revoke_Privileges(QString pIUserName, QString pIHost)
 {
 	QString revokeSql;
 	QString revokeStatus;
@@ -914,7 +1047,7 @@ QString RevokePrivileges(QString pIUserName, QString pIHost)
 }
 //用户授权
 //二十九个权限授权，过于复杂，并且代码重复过多
-QString AuthorityManagement(int pIJudgement,QString pIUserName,QString pIHost)
+QString Authority_Management(int pIJudgement,QString pIUserName,QString pIHost)
 {
 	int res;
 	QString grantSql;
@@ -995,7 +1128,7 @@ QString AuthorityManagement(int pIJudgement,QString pIUserName,QString pIHost)
 }
 
 //查询当前用户资源
-QString QueryUserResource(QStringList &pIOUserResource,QString pIUserName, QString pIHost)
+QString Query_UserResource(QStringList &pIOUserResource,QString pIUserName, QString pIHost)
 {
 	MYSQL_RES *queryResult;
 	QString querySql;
@@ -1021,7 +1154,7 @@ QString QueryUserResource(QStringList &pIOUserResource,QString pIUserName, QStri
 }
 
 //设置用户资源
-QString SetUserResource(QString pIUserName, QString pIHost, QString pIQuestions, QString pIUpdates, QString pIConnections, QString pIUserConnections)
+QString Set_UserResource(QString pIUserName, QString pIHost, QString pIQuestions, QString pIUpdates, QString pIConnections, QString pIUserConnections)
 {
 	QString setSql;
 	QString setStatus;
@@ -1039,7 +1172,7 @@ QString SetUserResource(QString pIUserName, QString pIHost, QString pIQuestions,
 }
 
 //查询当前用户赋予了权限的pISchema
-QString QuerySchema(QStringList &pIOSchema, QString pIUserName, QString pIHost,int *pIONumberOfRows)
+QString Query_Schema(QStringList &pIOSchema, QString pIUserName, QString pIHost,int *pIONumberOfRows)
 {
 	QString querySql;
 	QString queryStatus;
@@ -1073,7 +1206,7 @@ QString QuerySchema(QStringList &pIOSchema, QString pIUserName, QString pIHost,i
 }
 
 //设置当前用户数据库Schema权限
-QString SetSchemaPrivileges(int pIJudgement, QString pISchema, QString pIUserName, QString pIHost)
+QString Set_Schema_Privileges(int pIJudgement, QString pISchema, QString pIUserName, QString pIHost)
 {
 	int res;
 	QString grantSql;
@@ -1131,7 +1264,7 @@ QString SetSchemaPrivileges(int pIJudgement, QString pISchema, QString pIUserNam
 	}
 	return grantStatus;
 }
-QString QueryShemaVariables(QString pIUserName, QString pIHost, QString pISchema)
+QString Query_Shema_Variables(QString pIUserName, QString pIHost, QString pISchema)
 {
 	QString querySql;
 	QString queryStatus;
@@ -1147,7 +1280,7 @@ QString QueryShemaVariables(QString pIUserName, QString pIHost, QString pISchema
 	}
 	return queryStatus;
 }
-QString ShowSchemaPrivileges(QStringList &pIOSchemaPriv)
+QString Show_Schema_Privileges(QStringList &pIOSchemaPriv)
 {
 	QString querySql;
 	QString queryStatus;
@@ -1174,7 +1307,7 @@ QString ShowSchemaPrivileges(QStringList &pIOSchemaPriv)
 	}
 	return queryStatus;
 }
-QString RevokeSchemaPrivileges(QString pIUserName, QString pIHost)
+QString Revoke_Schema_Privileges(QString pIUserName, QString pIHost)
 {
 	QString revokeStatus;
 	QString revokeSql;
@@ -1190,7 +1323,7 @@ QString RevokeSchemaPrivileges(QString pIUserName, QString pIHost)
 	}
 	return revokeStatus;
 }
-QString DeleteEntry(QString pIUserName, QString pIHost, QString pISchema)
+QString Delete_Entry(QString pIUserName, QString pIHost, QString pISchema)
 {
 	QString deleteStatus;
 	QString deleteSql;
@@ -1205,4 +1338,39 @@ QString DeleteEntry(QString pIUserName, QString pIHost, QString pISchema)
 		deleteStatus = "OK";
 	}
 	return deleteStatus;
+}
+//by 2016.9.2
+//查询安装路径
+QString GetMysqlPath()
+{
+	QString pIPath;
+	mysql_query(&mysql, "select @@basedir as basePath from dual");
+	res = mysql_store_result(&mysql);
+	while (column = mysql_fetch_row(res))
+	{
+		pIPath = column[0];
+		break;
+	}
+	return pIPath;
+}
+// Use one of DB
+void UseOneOfDB(QString pIDatabaseName)
+{
+	QString sql = "use " + pIDatabaseName + " ;";
+	mysql_query(&mysql, sql.toStdString().c_str());
+}
+//导入数据库
+bool ImportDatabaseByOne(QString pIOneSQL, QString Tip)
+{
+	mysql_query(&mysql, "set names gbk");
+	if (mysql_query(&mysql, pIOneSQL.toStdString().c_str()))
+	{
+		Tip = mysql_error(&mysql);
+		return false;
+	}
+	else
+	{
+		Tip = " ";
+		return true;
+	}
 }

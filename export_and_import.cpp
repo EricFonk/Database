@@ -2,6 +2,7 @@
 #include "ExportPart.h"
 #include "ImportPart.h"
 #include "qmessagebox.h"
+#include "mysqlQuery.h"
 
 Export_and_Import::Export_and_Import(QWidget *parent)
 	: QWidget(parent)
@@ -18,7 +19,6 @@ Export_and_Import::Export_and_Import(QWidget *parent)
 	WindowLayout->addWidget(TabWidget_Main);
 
 	this->setLayout(WindowLayout);
-	this->resize(1200, 600);
 	this->setWindowTitle("Export And Import Databases");
 }
 

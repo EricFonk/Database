@@ -13,22 +13,22 @@
 #include <QtGui>
 #include <QString>
 
-class QViewTest : public QWidget
+class qViewTest : public QWidget
 {
     Q_OBJECT
 public:
-    QViewTest();
-    void ResetText(QString view_info);
-    void SetAllName(QString db_name,QString view_name);
-    void SetText(QString info);
+    qViewTest();
+    void resetText(QString view_info);
+    void setAllName(QString db_name,QString view_name);
+    void setText(QString info);
 private:
     QPushButton *pushButton;
     QTextEdit *textInfo;
     QString info,viewName,dbName;
     private slots:
-    void ApplyView();
-    void DropTheView();
-    void AlterView();
+    void applyView();
+    void dropView();
+    void alterView();
 };
 
 #endif /* qViewTest_h */

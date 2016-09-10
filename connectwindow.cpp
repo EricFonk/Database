@@ -76,7 +76,12 @@ QStringList connectwindow::getConnections()
     char buffer[256];
     QStringList messageList;
     
-    ifstream fp("/Users/vaaaas/Documents/Program/QT/Workbench/Connections");
+    QString dir = QDir::currentPath();
+    std::string strDir((const char *)dir.toLocal8Bit());
+    
+    cout<<strDir+"/Connections";
+    
+    ifstream fp(strDir+"/Connections");
     if(!fp.is_open()){
         cout<<"Error opening file Connections";
         exit(1);
@@ -166,14 +171,20 @@ void connectwindow::RemoveOneConn()
     char buffer[256];
     QStringList messageList;
     
-    ifstream fp("/Users/vaaaas/Documents/Program/QT/Workbench/Connections");
+    QString dir = QDir::currentPath();
+    std::string strDir((const char *)dir.toLocal8Bit());
+    
+    std::string ConnDir=strDir+"/Connections";
+    std::string tempDir=strDir+"/temp";
+    
+    ifstream fp(strDir+"/Connections");
     if(!fp.is_open()){
         cout<<"Error opening file Connections";
         exit(1);
     }else
     {
         ofstream saveFile;
-        saveFile.open("/Users/vaaaas/Documents/Program/QT/Workbench/temp",ios::out|ios::trunc);
+        saveFile.open(strDir+"/temp",ios::out|ios::trunc);
         if(!saveFile.is_open()){
             cout<<"Error opening file temp";
             exit(1);
@@ -195,7 +206,7 @@ void connectwindow::RemoveOneConn()
             saveFile.close();
         }
     }
-    remove("/Users/vaaaas/Documents/Program/QT/Workbench/Connections");
-    rename("/Users/vaaaas/Documents/Program/QT/Workbench/temp", "/Users/vaaaas/Documents/Program/QT/Workbench/Connections");
+    remove(ConnDir.c_str());
+    rename(tempDir.c_str(), ConnDir.c_str());
     Refresh();
 }
